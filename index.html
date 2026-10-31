@@ -2113,8 +2113,9 @@ where t.kind = 'chat' and not t.deleted
 const SQL_VACUUM = `vacuum full public.rexxa_items;`;
 
 const Sync = (() => {
-  let cfg = {url:'', key:'', syncKeys:true, syncImages:true, quotaMB:500, storage:null, storageAt:0, uid:null, lastPull:null, sigs:{}, sentTomb:{}, metaRev:0, lastOk:null, deviceId:'', email:''};
+  let cfg = {url:'', key:'', syncKeys:false, syncImages:true, quotaMB:500, storage:null, storageAt:0, uid:null, lastPull:null, sigs:{}, sentTomb:{}, metaRev:0, lastOk:null, deviceId:'', email:''};
   try{ Object.assign(cfg, JSON.parse(localStorage.getItem(SYNC_KEY)||'{}')); }catch{}
+  if(cfg.syncKeys == null) cfg.syncKeys = false; // default aman: API key tidak ikut tersinkron kecuali pengguna mengaktifkan sendiri
   if(!cfg.deviceId){ cfg.deviceId = 'd-'+uid(); }
   const saveCfg = () => { try{ localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); }catch{} };
   saveCfg();
@@ -2606,7 +2607,7 @@ const Sync = (() => {
     }
     const devs = [{name:deviceName()+' (ini)', seen:Date.now()}, ...Object.values(state.remoteUsage).filter(Boolean).map(d=>({name:d.device||'Perangkat lain', seen:d.seen}))];
     body.innerHTML = `
-      <div class="toggle-row" style="padding-top:0"><div><div class="t">Sinkronkan API key</div><div class="d">HP langsung bisa dipakai tanpa mengisi key lagi. Key tersimpan di database Supabase milikmu, hanya bisa dibaca akunmu.</div></div><label class="switch"><input type="checkbox" id="sy-keys" ${cfg.syncKeys?'checked':''}><span></span></label></div>
+      <div class="toggle-row" style="padding-top:0"><div><div class="t">Sinkronkan API key</div><div class="d">Key tersimpan <b>tanpa enkripsi</b> di database Supabase milikmu. Nyalakan hanya jika kamu memahami risikonya; mengisinya ulang di tiap perangkat lebih aman.</div></div><label class="switch"><input type="checkbox" id="sy-keys" ${cfg.syncKeys?'checked':''}><span></span></label></div>
       <div style="margin:14px 0 6px;font-weight:600;font-size:14px">Perangkat terhubung</div>
       <div class="dev-list">${devs.map(d=>`<div class="dev">${icon('cloud')}<span>${esc(d.name)}</span><span class="d">${d.seen?relTime(d.seen):''}</span></div>`).join('')}</div>
       <div style="margin:16px 0 6px;font-weight:600;font-size:14px">Tambah perangkat (misalnya HP)</div>
@@ -2616,7 +2617,14 @@ const Sync = (() => {
     $('#sy-storage').hidden = false; renderStorage();
     $('#sy-cloud').hidden = false; renderCloud();
     if(!cfg.storage || Date.now()-(cfg.storageAt||0) > 60e3) fetchStorage().catch(()=>{});
-    $('#sy-keys').onchange = e=>{ cfg.syncKeys = e.target.checked; saveCfg(); schedule(200); toast(cfg.syncKeys ? 'API key ikut disinkronkan' : 'API key tidak lagi disinkronkan'); };
+    $('#sy-keys').onchange = async e=>{
+      if(e.target.checked){
+        const setuju = await confirmDialog({tone:'warn', icon:'alert', title:'Sinkronkan API key?',
+          html:'API key (OpenAI/dll.) akan disimpan <b>tanpa enkripsi</b> di database Supabase dan disalin ke semua perangkatmu. Siapa pun yang bisa membaca databasemu (atau membobol akun sinkron) ikut mendapatkan key ini.<br><br>Lebih aman: isi key secara manual di tiap perangkat.',
+          confirm:'Tetap sinkronkan', cancel:'Batal'});
+        if(!setuju){ e.target.checked = false; return; }
+      }
+      cfg.syncKeys = e.target.checked; saveCfg(); schedule(200); toast(cfg.syncKeys ? 'API key ikut disinkronkan' : 'API key tidak lagi disinkronkan'); };
     $('#sy-link').onclick = async ()=>{
       const code = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({u:cfg.url, k:cfg.key})))));
       const link = `${location.origin}${location.pathname}#rexxa-sync=${code}`;

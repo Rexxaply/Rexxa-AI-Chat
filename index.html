@@ -138,7 +138,11 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .grp-tab.grp-add svg.i{width:13px;height:13px}
 .chat-item.dim{opacity:.55}
 
-.sb-foot{border-top:1px solid var(--line);padding:10px}
+.sb-foot{border-top:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px}
+.sb-foot .me{width:100%;border:0;padding:8px}
+.sb-new.pill{width:100%;background:var(--surface-2);border:1px solid var(--line-2);color:var(--text);padding:9px 14px;border-radius:999px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.sb-new.pill:hover{background:var(--surface);border-color:var(--line)}
+.sb-new.pill svg{width:15px;height:15px;stroke-width:2.4}
 .me{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;width:100%;text-align:left}
 .me:hover{background:var(--surface)}
 .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;color:#fff}
@@ -238,7 +242,10 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 }
 .img-note{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);background:var(--bg);border:1px dashed var(--line-2);border-radius:10px;padding:6px 10px;margin-bottom:8px;white-space:normal}
 .img-note svg.i{width:14px;height:14px}
-.bubble-user img{display:block;max-width:240px;max-height:240px;border-radius:12px;margin-bottom:8px;cursor:zoom-in}
+.bubble-imgs{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:85%;margin-bottom:10px}
+.bubble-imgs img{display:block;width:min(240px,64vw);aspect-ratio:4/3;object-fit:cover;border-radius:16px;cursor:zoom-in;box-shadow:0 2px 12px rgba(0,0,0,.25);border:1px solid var(--line)}
+.bubble-notes{background:transparent;border-style:dashed;padding:8px 14px}
+.bubble-notes .img-note{margin-bottom:0;background:transparent;border:0;padding:0}
 .ai-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .ai-head .nm{font-weight:600;font-size:14px}
 .ai-head .md{font-size:12px;color:var(--muted);font-family:var(--mono)}
@@ -338,6 +345,17 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .c-row .spacer{flex:1 1 auto;min-width:4px}
 .c-row .model-wrap{flex:0 1 auto;min-width:0}
 .c-row .send{margin-left:2px}
+/* Dropdown thinking (radio style ala AI) */
+.think-pick{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:9px;font-size:13px;color:var(--text-2);background:transparent;border:1px solid transparent;cursor:pointer}
+.think-pick:hover,.think-pick[aria-expanded=true]{background:var(--surface-2);border-color:var(--line)}
+.think-pick svg{width:14px;height:14px;stroke-width:2.4}
+.think-menu{position:absolute;bottom:calc(100% + 6px);left:0;min-width:180px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:50;opacity:0;visibility:hidden;transform:translateY(4px);transition:all .18s ease}
+.think-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.think-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--text);width:100%;text-align:left;font-size:14px}
+.think-opt:hover{background:var(--surface-2)}
+.think-opt .rd{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);flex-shrink:0;position:relative}
+.think-opt.on .rd{border-color:var(--purple);background:var(--purple)}
+.think-opt.on .rd::after{content:'';position:absolute;inset:2px;border-radius:50%;background:var(--surface)}
 .c-select{appearance:none;-webkit-appearance:none;background:transparent;border:1px solid transparent;color:var(--text-2);font-size:13px;padding:6px 26px 6px 10px;border-radius:9px;cursor:pointer;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A829F' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .c-select:hover{background-color:var(--surface-2)}
@@ -836,7 +854,6 @@ body:has(.menu.closing) .menu-scrim{animation:fadeOut .18s ease-in forwards}
       <button class="icon-btn" id="btn-collapse" title="Tutup sidebar" aria-label="Tutup sidebar" data-icon="sidebar"></button>
     </div>
     <div class="sb-actions">
-      <button class="sb-new" id="btn-new"><span class="plus" data-icon="plus"></span>Percakapan baru</button>
       <button class="nav-item" id="nav-search"><span data-icon="search"></span>Cari<kbd>Ctrl K</kbd></button>
       <button class="nav-item" id="nav-chat"><span data-icon="chat"></span>Percakapan</button>
       <button class="nav-item" id="nav-dash"><span data-icon="grid"></span>Dashboard</button>
@@ -844,6 +861,7 @@ body:has(.menu.closing) .menu-scrim{animation:fadeOut .18s ease-in forwards}
     </div>
     <nav class="sb-list scroll" id="chat-list" aria-label="Riwayat percakapan"></nav>
     <div class="sb-foot">
+      <button class="sb-new pill" id="btn-new"><span data-icon="plus"></span>Chat baru</button>
       <button class="me" id="btn-me">
         <span class="avatar user" id="me-avatar">R</span>
         <span style="flex:1;min-width:0"><span class="n" id="me-name" style="display:block">Rexxa</span><span class="s" id="me-sub"><span class="sync-dot" id="me-dot"></span><span id="me-sync">Pengaturan &amp; profil</span></span></span>
@@ -907,11 +925,12 @@ body:has(.menu.closing) .menu-scrim{animation:fadeOut .18s ease-in forwards}
             <input type="file" id="file-any" accept=".txt,.md,.markdown,.csv,.json,.js,.ts,.jsx,.tsx,.py,.html,.css,.xml,.yml,.yaml,.log,.sql,.ini,.conf,.env,.sh,.bat,.java,.c,.cpp,.h,.cs,.go,.rs,.php,.rb,.swift,.kt,.toml,.pdf,text/*,application/json" hidden>
             <button class="icon-btn" id="btn-attach" title="Lampirkan gambar" aria-label="Lampirkan gambar" data-icon="paperclip"></button>
             <button class="icon-btn mic" id="btn-mic" title="Dikte suara" aria-label="Dikte suara" data-icon="mic"></button>
-            <select class="c-select" id="think" title="Level thinking" aria-label="Level thinking">
-              <option value="0.2">Cepat</option>
-              <option value="0.7">Seimbang</option>
-              <option value="1.2">Kreatif</option>
-            </select>
+            <div style="position:relative" class="think-wrap">
+              <button class="think-pick" id="think-pick" aria-haspopup="true" title="Level thinking">
+                <span id="think-label">Seimbang</span><span data-icon="chevDown"></span>
+              </button>
+              <div class="menu up" id="think-menu"></div>
+            </div>
             <div class="spacer"></div>
             <button class="icon-btn" id="btn-file-tool" title="Buat file (PPT, DOC, XLS, PDF…)" aria-label="Buat file" data-icon="filePlus"></button>
             <div style="position:relative" class="model-wrap"><button class="model-pick" id="model-pick" aria-haspopup="true" title="Ganti profil AI"><span class="p-emoji" id="mp-emoji"></span><span class="mp-name" id="mp-name"></span><span class="mp-model" id="mp-model"></span><span data-icon="chevDown"></span></button><div class="menu up" id="model-menu"></div></div>
@@ -1361,6 +1380,49 @@ function dialog(o){
   });
 }
 const confirmDialog = o => dialog(o).then(Boolean);
+
+/* Dialog input teks: mengembalikan string yang diketik, atau null jika batal */
+function inputDialog(o){
+  return new Promise(resolve => {
+    const wrap = $('#dlg'), box = $('#dlg-box'), ok = $('#dlg-ok'), no = $('#dlg-no'), x = $('#dlg-x');
+    const tone = o.tone || 'info';
+    box.className = 'dlg ' + tone;
+    $('#dlg-ic').innerHTML = icon(o.icon || 'folder');
+    $('#dlg-t').textContent = o.title || '';
+    $('#dlg-m').innerHTML = o.html || '';
+    ok.textContent = o.confirm || 'OK';
+    ok.className = 'btn ' + (tone==='danger' ? 'solid-danger' : 'primary');
+    no.textContent = o.cancel || 'Batal'; no.hidden = false;
+    x.innerHTML = '';
+    const input = document.createElement('input');
+    input.className = 'input';
+    input.id = 'dlg-input';
+    input.placeholder = o.placeholder || '';
+    input.value = o.value || '';
+    input.autocomplete = 'off';
+    input.style.cssText = 'width:100%;margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--bg);color:var(--text);font:inherit';
+    x.appendChild(input);
+    const prevFocus = document.activeElement;
+    const done = (val) => {
+      wrap.classList.add('closing'); document.removeEventListener('keydown', onKey, true);
+      setTimeout(()=>{ wrap.classList.remove('open','closing'); prevFocus?.focus?.(); }, 150);
+      resolve(val);
+    };
+    const onKey = e => {
+      if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); done(null); }
+      if(e.key==='Enter' && !ok.disabled){ e.preventDefault(); done(input.value.trim() || null); }
+      if(e.key==='Tab'){ const f = [...box.querySelectorAll('button:not([hidden]):not(:disabled),input')]; const i = f.indexOf(document.activeElement); if(e.shiftKey && i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if(!e.shiftKey && i===f.length-1){ e.preventDefault(); f[0].focus(); } }
+    };
+    ok.onclick = () => done(input.value.trim() || null);
+    no.onclick = () => done(null);
+    wrap.onclick = e => { if(e.target===wrap) done(null); };
+    input.oninput = () => { ok.disabled = !input.value.trim(); };
+    ok.disabled = !input.value.trim();
+    document.addEventListener('keydown', onKey, true);
+    wrap.classList.remove('closing'); wrap.classList.add('open');
+    setTimeout(()=> input.focus(), 30);
+  });
+}
 async function copyText(text){
   try{ await navigator.clipboard.writeText(text); return true; }
   catch{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); let ok=false; try{ok=document.execCommand('copy')}catch{} ta.remove(); return ok; }
@@ -1422,10 +1484,12 @@ function renderGroupBar(){
   bar.querySelectorAll('.grp-tab[data-g]').forEach(b=>b.onclick = ()=>{ activeGroup = b.dataset.g; saveGroups(); renderSidebar(); });
   bar.querySelectorAll('.grp-tab[data-g]').forEach(b=>b.ondblclick = async ()=>{
     const g = b.dataset.g; if(g==='Semua') return;
-    const name = prompt('Ubah nama grup:', g); if(name && name.trim()){ const i=chatGroups.indexOf(g); chatGroups[i]=name.trim(); state.chats.forEach(c=>{ if(c.group===g) c.group=name.trim(); }); if(activeGroup===g) activeGroup=name.trim(); save(); saveGroups(); renderSidebar(); }
+    const name = await inputDialog({icon:'folder', title:'Ubah nama grup', value:g, confirm:'Simpan'});
+    if(name && name.trim()){ const i=chatGroups.indexOf(g); chatGroups[i]=name.trim(); state.chats.forEach(c=>{ if(c.group===g) c.group=name.trim(); }); if(activeGroup===g) activeGroup=name.trim(); save(); saveGroups(); renderSidebar(); }
   });
-  $('#grp-add').onclick = ()=>{
-    const name = prompt('Nama grup baru (mis. Kerja, Kuliah, Pribadi):'); if(!name || !name.trim()) return;
+  $('#grp-add').onclick = async ()=>{
+    const name = await inputDialog({icon:'folder', title:'Buat grup baru', placeholder:'Nama grup (mis. Kerja, Kuliah, Pribadi)', confirm:'Buat grup'});
+    if(!name || !name.trim()) return;
     const n = name.trim(); if(!chatGroups.includes(n)) chatGroups.push(n);
     activeGroup = n; saveGroups(); renderSidebar(); toast(`Grup "${n}" dibuat`);
   };
@@ -1440,7 +1504,7 @@ function renderSidebar(){
   const visible = activeGroup==='Semua' ? allChats : allChats.filter(c=>c.group===activeGroup);
   const others = activeGroup==='Semua' ? [] : allChats.filter(c=>c.group!==activeGroup && !c.group);
   const now = new Date(); const startToday = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
-  const groups = [['Disematkan',[]],['Hari ini',[]],['Kemarin',[]],['7 hari terakhir',[]],['30 hari terakhir',[]],['Lebih lama',[]]];
+  const groups = [['Disematkan',[]],['Terbaru',[]],['Kemarin',[]],['7 hari terakhir',[]],['30 hari terakhir',[]],['Lebih lama',[]]];
   [...visible].sort((a,b)=>b.updatedAt-a.updatedAt).forEach(c=>{
     if(c.pinned) return groups[0][1].push(c);
     const t=c.updatedAt;
@@ -1474,10 +1538,10 @@ $('#chat-list').addEventListener('click', e=>{
   if(a==='grp'){ moveToGroup(item.dataset.id); return; }
   openChat(item.dataset.id);
 });
-function moveToGroup(id){
+async function moveToGroup(id){
   const c = state.chats.find(x=>x.id===id); if(!c) return;
   const opts = ['— Tanpa grup —', ...chatGroups.filter(g=>g!=='Semua')];
-  const pick = prompt(`Pindahkan "${c.title}" ke grup:\n${opts.map((g,i)=>`${i+1}. ${g}`).join('\n')}\n\nKetik nomor atau nama grup:`, c.group || '');
+  const pick = await inputDialog({icon:'folder', title:`Pindahkan "${c.title}" ke grup`, value:c.group||'', placeholder:'Ketik nama grup atau pilih dari daftar', confirm:'Pindahkan'});
   if(pick===null) return;
   let target = opts[+pick-1] || pick.trim();
   if(target==='— Tanpa grup —' || !target) target = null;
@@ -1592,10 +1656,14 @@ function msgEl(m, isLast){
   const d = document.createElement('div');
   d.className = `msg ${m.role}${isLast?' last':''}${enterIds.delete(m.id)?' enter':''}`; d.dataset.mid = m.id;
   if(m.role==='user'){
-    const imgs = (m.images||[]).map(src=>`<img src="${esc(src)}" alt="Lampiran">`).join('')
-      + (m.imagesOmitted ? `<span class="img-note">${icon('cloud')}${m.imagesOmitted} gambar hanya ada di perangkat pengirim</span>` : '')
+    const imgs = (m.images||[]).map(src=>`<img src="${esc(src)}" alt="Lampiran">`).join('');
+    const notes = (m.imagesOmitted ? `<span class="img-note">${icon('cloud')}${m.imagesOmitted} gambar hanya ada di perangkat pengirim</span>` : '')
       + (m.imagesRemoved && !(m.images||[]).length ? `<span class="img-note">${icon('trash')}${m.imagesRemoved} gambar dihapus untuk menghemat ruang</span>` : '');
-    d.innerHTML = `<div class="bubble-user">${imgs}${esc(m.text)}</div>
+    // Gambar & teks dipisah: gambar bubble tersendiri di atas, teks di bubble terpisah
+    const imgBubbles = imgs ? `<div class="bubble-imgs">${imgs}</div>` : '';
+    const textPart = m.text ? `<div class="bubble-user">${esc(m.text)}</div>` : '';
+    const notesPart = notes ? `<div class="bubble-user bubble-notes">${notes}</div>` : '';
+    d.innerHTML = `${imgBubbles}${textPart}${notesPart}
       <div class="msg-actions">
         <button class="icon-btn sm" data-a="copy" title="Salin" aria-label="Salin">${icon('copy')}</button>
         <button class="icon-btn sm" data-a="edit" title="Edit" aria-label="Edit pesan">${icon('edit')}</button>
@@ -1616,7 +1684,7 @@ function msgEl(m, isLast){
   return d;
 }
 msgsEl.addEventListener('click', async e=>{
-  const img = e.target.closest('.bubble-user img'); if(img){ $('#lightbox-img').src = img.src; $('#lightbox').classList.add('open'); return; }
+  const img = e.target.closest('.bubble-imgs img, .bubble-user img'); if(img){ $('#lightbox-img').src = img.src; $('#lightbox').classList.add('open'); return; }
   const btn = e.target.closest('[data-a]'); if(!btn) return;
   const mid = btn.closest('.msg').dataset.mid; const c = chat(); if(!c) return;
   const idx = c.messages.findIndex(m=>m.id===mid); const m = c.messages[idx];
@@ -1690,7 +1758,35 @@ input.addEventListener('keydown', e=>{
   if(e.key==='Enter' && !e.shiftKey && !e.isComposing && ((state.settings.enterSend && !isTouch) || e.ctrlKey || e.metaKey)){ e.preventDefault(); if(!generating) send(); }
 });
 sendBtn.onclick = ()=> generating ? stopGen() : send();
-$('#think').onchange = e=>{ state.settings.temperature = e.target.value; save(); toast('Level thinking: '+e.target.selectedOptions[0].text); };
+
+/* Dropdown thinking custom (radio style) */
+const THINK_OPTS = [
+  {value:'0.2', label:'Cepat', desc:'Jawaban singkat, langsung'},
+  {value:'0.7', label:'Seimbang', desc:'Seimbang antara kecepatan dan kualitas'},
+  {value:'1.2', label:'Kreatif', desc:'Lebih kreatif dan eksploratif'}
+];
+function renderThinkMenu(){
+  const cur = state.settings.temperature || '0.7';
+  $('#think-menu').innerHTML = THINK_OPTS.map(o=>`
+    <button class="think-opt ${o.value===cur?'on':''}" data-v="${o.value}">
+      <span class="rd"></span>
+      <span style="flex:1">
+        <div style="font-weight:500">${o.label}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${o.desc}</div>
+      </span>
+    </button>`).join('');
+  $('#think-label').textContent = THINK_OPTS.find(o=>o.value===cur)?.label || 'Seimbang';
+  $('#think-menu').querySelectorAll('.think-opt').forEach(b=>{
+    b.onclick = ()=>{
+      state.settings.temperature = b.dataset.v; save();
+      renderThinkMenu();
+      closeMenus();
+      toast('Level thinking: '+THINK_OPTS.find(o=>o.value===b.dataset.v)?.label);
+    };
+  });
+}
+$('#think-pick').onclick = e=>{ e.stopPropagation(); renderThinkMenu(); toggleMenu($('#think-menu'), e.currentTarget); };
+$('#think-menu').onclick = e=>e.stopPropagation();
 
 function renderAttach(){
   const imgs = attachments.map((a,i)=>`<div class="thumb"><img src="${a}" alt="Lampiran ${i+1}"><button data-i="${i}" aria-label="Hapus lampiran">${icon('x')}</button></div>`).join('');
@@ -2199,7 +2295,7 @@ function toggleMenu(m, btn){
   const open = !m.classList.contains('open') || m.classList.contains('closing'); closeMenus(); if(open) m.classList.remove('closing');
   if(open){ m.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
 }
-document.addEventListener('click', e=>{ if(!e.target.closest('.menu') && !e.target.closest('#btn-more,#profile-switch,#model-pick') && !e.target.closest('#attach-menu') && !e.target.closest('#btn-attach')) closeMenus(); });
+document.addEventListener('click', e=>{ if(!e.target.closest('.menu') && !e.target.closest('#btn-more,#profile-switch,#model-pick,#think-pick') && !e.target.closest('#attach-menu') && !e.target.closest('#btn-attach')) closeMenus(); });
 $('#btn-more').onclick = e=>toggleMenu($('#more-menu'), e.currentTarget);
 $('#more-menu').onclick = async e=>{
   const a = e.target.closest('[data-act]')?.dataset.act; if(!a) return; closeMenus();
@@ -2340,7 +2436,7 @@ function renderProfileSwitch(){
   input.placeholder = `Tulis pesan untuk ${p.name}…`;
   $('#profile-menu').innerHTML = profileMenuHTML();
   $('#model-menu').innerHTML = profileMenuHTML();
-  $('#think').value = state.settings.temperature;
+  renderThinkMenu();
 }
 $('#profile-switch').onclick = e=>toggleMenu($('#profile-menu'), e.currentTarget);
 $('#model-pick').onclick = e=>toggleMenu($('#model-menu'), e.currentTarget);

@@ -17,9 +17,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js" integrity="sha384-3HPB1XT51W3gGRxAmZ+qbZwRpRlFQL632y8x+adAqCr4Wp3TaWwCLSTAJJKbyWEK" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous"></script>
 <style>
 :root{
   color-scheme: dark;
@@ -1240,7 +1240,8 @@ function renderMd(text){
       .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m.replace(/\n/g,'')+'</ul>')
       .replace(/\n/g,'<br>').replace(/(<br>)*(<pre|<ul)/g,'$2').replace(/(<\/pre>|<\/ul>)(<br>)*/g,'$1');
   }
-  return window.DOMPurify ? DOMPurify.sanitize(html, {ADD_ATTR:['target']}) : html;
+  // Tanpa DOMPurify (CDN gagal/diblokir): jangan pernah inject HTML mentah — render sebagai teks polos.
+  return window.DOMPurify ? DOMPurify.sanitize(html, {ADD_ATTR:['target']}) : esc(text).replace(/\n/g,'<br>');
 }
 function enhance(el, highlight=true){
   el.querySelectorAll('pre').forEach(pre=>{
@@ -1397,7 +1398,7 @@ function msgEl(m, isLast){
   const d = document.createElement('div');
   d.className = `msg ${m.role}${isLast?' last':''}${enterIds.delete(m.id)?' enter':''}`; d.dataset.mid = m.id;
   if(m.role==='user'){
-    const imgs = (m.images||[]).map(src=>`<img src="${src}" alt="Lampiran">`).join('')
+    const imgs = (m.images||[]).map(src=>`<img src="${esc(src)}" alt="Lampiran">`).join('')
       + (m.imagesOmitted ? `<span class="img-note">${icon('cloud')}${m.imagesOmitted} gambar hanya ada di perangkat pengirim</span>` : '')
       + (m.imagesRemoved && !(m.images||[]).length ? `<span class="img-note">${icon('trash')}${m.imagesRemoved} gambar dihapus untuk menghemat ruang</span>` : '');
     d.innerHTML = `<div class="bubble-user">${imgs}${esc(m.text)}</div>
@@ -2125,8 +2126,9 @@ const Sync = (() => {
     const br = /edg\//i.test(ua)?'Edge':/chrome|crios/i.test(ua)?'Chrome':/firefox|fxios/i.test(ua)?'Firefox':/safari/i.test(ua)?'Safari':'Browser';
     return `${os} · ${br}`; };
   const ready = () => !!(sb && session);
+  const SUPABASE_JS_INTEGRITY = 'sha384-I0S+WEYpKLUT/t1llPKT4+JS+TvKhTBZW6gswQLnxORTICHRt89vwx5dtLl+EfeE';
   const loadScript = src => new Promise((res, rej) => { if(window.supabase?.createClient) return res();
-    const sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = () => rej(new Error('Gagal memuat pustaka Supabase')); document.head.appendChild(sc); });
+    const sc = document.createElement('script'); sc.src = src; sc.integrity = SUPABASE_JS_INTEGRITY; sc.crossOrigin = 'anonymous'; sc.onload = res; sc.onerror = () => rej(new Error('Gagal memuat pustaka Supabase')); document.head.appendChild(sc); });
 
   function setStatus(st, msg=''){
     status = st; statusMsg = msg;
@@ -2337,8 +2339,18 @@ const Sync = (() => {
   }
   async function readLink(){
     const m = location.hash.match(/rexxa-sync=([^&]+)/); let ok = false;
-    if(m){ try{ const d = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if(d.u && d.k){ ok = true; cfg.url = d.u; cfg.key = d.k; saveCfg(); setTimeout(()=>{ showView('dash'); setTab('sync'); toast('Konfigurasi sinkron diterima. Silakan masuk.'); }, 300); } }catch{}
-      history.replaceState(null, '', location.pathname + location.search); }
+    if(m){ try{ const d = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+      // Validasi: hanya terima URL https project Supabase yang valid, dan minta konfirmasi dulu
+      // agar link jahat tidak bisa mengarahkan sinkron ke project milik orang lain.
+      if(d.u && d.k && /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(String(d.u).trim())){
+        ok = true;
+        const setuju = await confirmDialog({tone:'warn', icon:'link', title:'Hubungkan sinkronisasi?',
+          html:`Aplikasi akan disambungkan ke project Supabase:<br><b style="font-family:var(--mono)">${esc(d.u)}</b><br><br>Lanjutkan hanya jika link ini kamu buat sendiri dari perangkatmu yang lain.`,
+          confirm:'Ya, hubungkan', cancel:'Tolak'});
+        if(setuju){ cfg.url = d.u; cfg.key = d.k; saveCfg(); setTimeout(()=>{ showView('dash'); setTab('sync'); toast('Konfigurasi sinkron diterima. Silakan masuk.'); }, 300); }
+        else ok = false;
+      } else if(d.u || d.k) { toast('Link penyambung tidak valid atau bukan project Supabase', true); }
+    }catch{} history.replaceState(null, '', location.pathname + location.search); }
     return ok;
   }
 

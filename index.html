@@ -115,7 +115,7 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .nav-item kbd{margin-left:auto}
 kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;background:var(--bg)}
 
-.sb-list{flex:1;overflow-y:auto;padding:8px 10px 12px}
+.sb-list{flex:1;min-height:0;overflow-y:auto;padding:8px 10px 12px;scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
 .group-label{font-size:12px;color:var(--muted);padding:14px 10px 6px;font-weight:500}
 .chat-item{
   position:relative;display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border-radius:9px;
@@ -137,6 +137,29 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .grp-tab.grp-add{padding:5px 9px}
 .grp-tab.grp-add svg.i{width:13px;height:13px}
 .chat-item.dim{opacity:.55}
+/* Daftar grup vertikal */
+.grp-list{display:flex;flex-direction:column;gap:2px;padding:6px 8px 4px;flex:none;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
+.grp-list::-webkit-scrollbar,.sb-list::-webkit-scrollbar{width:8px}
+.grp-list::-webkit-scrollbar-thumb,.sb-list::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+.grp-list::-webkit-scrollbar-thumb:hover,.sb-list::-webkit-scrollbar-thumb:hover{background:var(--line-2);background-clip:content-box;border:2px solid transparent}
+.grp-list::-webkit-scrollbar-track,.sb-list::-webkit-scrollbar-track{background:transparent}
+.grp-list::-webkit-scrollbar-button,.sb-list::-webkit-scrollbar-button{display:none}
+.grp-row{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:10px;cursor:pointer;color:var(--text-2);user-select:none}
+.grp-row:hover{background:var(--surface-2)}
+.grp-row.on{background:var(--surface-2);color:var(--text)}
+.grp-chev{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;flex:none;color:var(--muted);transition:transform .22s cubic-bezier(.32,.72,0,1)}
+.grp-chev:hover{background:var(--surface-3);color:var(--text)}
+.grp-chev svg{width:14px;height:14px;transition:transform .22s cubic-bezier(.32,.72,0,1);transform:rotate(-90deg)}
+.grp-chev.open svg{transform:rotate(0)}
+.grp-row .nm{flex:1;min-width:0;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grp-row .cnt{flex:none;font-size:11px;color:var(--muted)}
+.grp-row .acts{flex:none;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.grp-row:hover .acts,.grp-row.on .acts{opacity:1}
+.grp-add-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600}
+.grp-add-row:hover{background:var(--surface-2);color:var(--text)}
+.grp-add-row svg{width:14px;height:14px}
+.grp-chats{padding-left:16px;display:flex;flex-direction:column;gap:2px;animation:panelIn .25s ease}
+.grp-sep{height:1px;background:var(--line);margin:6px 10px}
 
 .sb-foot{border-top:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px}
 .sb-foot .me{width:100%;border:0;padding:8px}
@@ -492,8 +515,10 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .toggle-row .d{font-size:12.5px;color:var(--muted)}
 
 /* Attachment sheet & tool chips */
-.am-scrim{position:fixed;inset:0;background:rgba(5,4,10,.55);z-index:140;animation:pop .15s ease-out}
-.attach-menu{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:150;background:var(--surface);border:1px solid var(--line-2);border-radius:22px;padding:6px 8px 10px;max-height:80vh;overflow-y:auto;box-shadow:0 -10px 60px -10px rgba(0,0,0,.8);animation:sheet .24s cubic-bezier(.2,.9,.3,1)}
+.am-scrim{position:fixed;inset:0;background:rgba(5,4,10,.55);z-index:140;animation:scrimIn .3s ease-out}
+.am-scrim.closing{animation:scrimOut .25s ease-in forwards}
+.attach-menu{--tx:0;position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:150;background:var(--surface);border:1px solid var(--line-2);border-radius:22px;padding:6px 8px 10px;max-height:80vh;overflow-y:auto;box-shadow:0 -10px 60px -10px rgba(0,0,0,.8);animation:sheet .5s cubic-bezier(.32,.72,0,1)}
+.attach-menu.closing{animation:sheetOut .28s cubic-bezier(.5,0,.75,0) forwards}
 .attach-menu::before{content:"";display:block;width:40px;height:5px;border-radius:5px;background:var(--line-2);margin:6px auto 10px}
 .am-head{display:flex;align-items:center;justify-content:center;position:relative;padding:2px 8px 12px}
 .am-head .t{font-weight:600;font-size:15.5px}
@@ -514,7 +539,7 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .mem-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:13.5px}
 .mem-item span{flex:1;min-width:0;word-break:break-word}
 .mem-item button{flex:none;color:var(--muted)}
-@media (min-width:761px){.attach-menu{left:50%;right:auto;transform:translateX(-50%);width:480px;bottom:24px}}
+@media (min-width:761px){.attach-menu{--tx:-50%;left:50%;right:auto;transform:translateX(-50%);width:480px;bottom:24px}}
 .tool-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:6px;background:rgba(139,92,246,.14);color:var(--purple-2);border:1px solid rgba(139,92,246,.3)}
 .tool-chip svg{width:13px;height:13px}
 .fchip{display:inline-flex;align-items:center;gap:8px;max-width:220px;padding:8px 10px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface-2);font-size:12.5px}
@@ -686,7 +711,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
 @keyframes msgIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes bubbleIn{0%{opacity:0;transform:translateY(12px) scale(.94)}60%{opacity:1}100%{transform:none}}
 @keyframes menuOut{to{opacity:0;transform:translateY(-4px) scale(.98)}}
-@keyframes sheetOut{to{opacity:0;transform:translateY(60px)}}
+@keyframes sheetOut{from{transform:translate(var(--tx,0),0);opacity:1}to{transform:translate(var(--tx,0),100%);opacity:0}}
 @keyframes zoomIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 @keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .view.enter{animation:viewIn .36s var(--ease)}
@@ -721,7 +746,9 @@ body:has(.menu.closing) .menu-scrim{animation:fadeOut .18s ease-in forwards}
 /* ================= Mobile-first polish ================= */
 .only-mobile{display:none !important}
 .menu-scrim{display:none}
-@keyframes sheet{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes sheet{from{transform:translate(var(--tx,0),100%);opacity:.6}to{transform:translate(var(--tx,0),0);opacity:1}}
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
+@keyframes scrimOut{from{opacity:1}to{opacity:0}}
 @media (max-width: 760px){
   .only-mobile{display:grid !important}
   button.only-mobile.search-cancel{display:block !important}
@@ -1468,24 +1495,102 @@ function enhance(el, highlight=true){
 
 /* ================= Grup obrolan ================= */
 const GROUPS_KEY = 'rexxa_groups';
-let chatGroups = JSON.parse(localStorage.getItem(GROUPS_KEY) || '["Semua"]');
-let activeGroup = localStorage.getItem('rexxa_active_group') || 'Semua';
-function saveGroups(){ localStorage.setItem(GROUPS_KEY, JSON.stringify(chatGroups)); localStorage.setItem('rexxa_active_group', activeGroup); }
-function groupBarHTML(){
-  return `<div class="grp-bar" id="grp-bar">
-    ${chatGroups.map(g=>`<button class="grp-tab ${g===activeGroup?'on':''}" data-g="${esc(g)}">${esc(g)}</button>`).join('')}
-    <button class="grp-tab grp-add" id="grp-add" title="Buat grup baru">${icon('plus')}</button>
-  </div>`;
-}
+let chatGroups = JSON.parse(localStorage.getItem(GROUPS_KEY) || '[]');
+let activeGroup = localStorage.getItem('rexxa_active_group') || null;
+let collapsedGroups = JSON.parse(localStorage.getItem('rexxa_groups_collapsed') || '[]');
+if(activeGroup && !chatGroups.includes(activeGroup)) activeGroup = null;
+function saveGroups(){ localStorage.setItem(GROUPS_KEY, JSON.stringify(chatGroups)); localStorage.setItem('rexxa_active_group', activeGroup||''); localStorage.setItem('rexxa_groups_collapsed', JSON.stringify(collapsedGroups)); }
 function renderGroupBar(){
   $('#grp-bar')?.remove();
-  $('#chat-list').insertAdjacentHTML('beforebegin', groupBarHTML());
+  const rows = chatGroups.map(g=>{
+    const items = state.chats.filter(c=>c.group===g).sort((a,b)=>b.updatedAt-a.updatedAt);
+    const open = !collapsedGroups.includes(g);
+    const cnt = items.length;
+    return `<div class="grp-row ${g===activeGroup?'on':''}" data-g="${esc(g)}" role="button" tabindex="0">
+      <button class="grp-chev ${open?'open':''}" data-ga="chev" title="${open?'Sembunyikan':'Tampilkan'} obrolan" aria-label="${open?'Sembunyikan':'Tampilkan'}">${icon('chevDown')}</button>
+      <span class="nm">${esc(g)}</span><span class="cnt">${cnt||''}</span>
+      <span class="acts">
+        <button class="icon-btn sm" data-ga="pin" title="Sematkan semua obrolan di grup" aria-label="Sematkan">${icon('pin')}</button>
+        <button class="icon-btn sm" data-ga="del" title="Hapus grup & obrolannya" aria-label="Hapus grup">${icon('trash')}</button>
+      </span>
+    </div>
+    <div class="grp-chats" data-gc="${esc(g)}" ${open?'':'hidden'}>
+      ${items.length ? items.map(c=>`
+        <div class="chat-item ${c.id===state.activeChatId && currentView==='chat'?'active':''}" data-id="${c.id}" role="button" tabindex="0">
+          ${c.pinned?'<span class="pin-dot"></span>':''}<span class="t ${titling.has(c.id)?'title-loading':''}">${esc(c.title)}</span>
+          <span class="acts">
+            <button class="icon-btn sm" data-a="ungrp" title="Keluarkan dari grup" aria-label="Keluarkan dari grup">${icon('logout')}</button>
+            <button class="icon-btn sm" data-a="pin" title="${c.pinned?'Lepas sematan':'Sematkan'}" aria-label="Sematkan">${icon('pin')}</button>
+            <button class="icon-btn sm" data-a="del" title="Hapus" aria-label="Hapus">${icon('trash')}</button>
+          </span>
+        </div>`).join('') : '<div class="sb-empty" style="padding:8px 10px">Grup ini masih kosong. Pindahkan obrolan ke sini lewat ikon folder.</div>'}
+    </div>`;
+  }).join('');
+  $('#chat-list').insertAdjacentHTML('beforebegin',
+    `<div class="grp-list" id="grp-bar">${rows}
+      <div class="grp-add-row" id="grp-add">${icon('plus')}Grup baru</div>
+      ${chatGroups.length?'<div class="grp-sep"></div>':''}
+    </div>`);
+  // Batasi tinggi daftar grup agar daftar chat utama selalu terlihat:
+  // scrollbar aktif begitu konten melewati batas yg dihitung dinamis dari posisi grup.
+  requestAnimationFrame(()=>{
+    const gl = $('#grp-bar'), sb = gl?.closest('.sidebar'), foot = sb?.querySelector('.sb-foot');
+    if(!gl || !sb || !foot) return;
+    const top = gl.getBoundingClientRect().top;
+    const footTop = foot.getBoundingClientRect().top;
+    const reserve = Math.min(280, (footTop - top) * .55); // sisakan ruang min utk daftar chat
+    gl.style.maxHeight = Math.max(140, footTop - top - reserve) + 'px';
+  });
   const bar = $('#grp-bar');
-  bar.querySelectorAll('.grp-tab[data-g]').forEach(b=>b.onclick = ()=>{ activeGroup = b.dataset.g; saveGroups(); renderSidebar(); });
-  bar.querySelectorAll('.grp-tab[data-g]').forEach(b=>b.ondblclick = async ()=>{
-    const g = b.dataset.g; if(g==='Semua') return;
-    const name = await inputDialog({icon:'folder', title:'Ubah nama grup', value:g, confirm:'Simpan'});
-    if(name && name.trim()){ const i=chatGroups.indexOf(g); chatGroups[i]=name.trim(); state.chats.forEach(c=>{ if(c.group===g) c.group=name.trim(); }); if(activeGroup===g) activeGroup=name.trim(); save(); saveGroups(); renderSidebar(); }
+  bar.querySelectorAll('.grp-row').forEach(row=>{
+    const g = row.dataset.g;
+    row.onclick = async e=>{
+      const ga = e.target.closest('[data-ga]')?.dataset.ga;
+      if(ga==='chev'){
+        e.stopPropagation();
+        const i = collapsedGroups.indexOf(g);
+        if(i>=0) collapsedGroups.splice(i,1); else collapsedGroups.push(g);
+        saveGroups(); renderGroupBar(); return;
+      }
+      if(ga==='pin'){
+        e.stopPropagation();
+        const items = state.chats.filter(c=>c.group===g);
+        if(!items.length) return toast('Grup kosong', true);
+        const allPinned = items.every(c=>c.pinned);
+        items.forEach(c=>c.pinned = !allPinned);
+        save(); renderSidebar(); toast(allPinned?'Sematan grup dilepas':'Semua obrolan di grup disematkan'); return;
+      }
+      if(ga==='del'){
+        e.stopPropagation();
+        const n = state.chats.filter(c=>c.group===g).length;
+        if(!await confirmDialog({tone:'danger', title:`Hapus grup "${g}"?`, html:n?`Grup beserta <b>${n} obrolan</b> di dalamnya akan dihapus permanen.`:'Grup kosong ini akan dihapus.', confirm:'Hapus'})) return;
+        const inGrp = state.chats.filter(c=>c.group===g);
+        if(inGrp.length && Sync.isOn()){ const ids = inGrp.filter(c=>!c.localOnly).map(c=>c.id); try{ if(ids.length) await deleteChats(ids, 'all'); }catch(e){ toast(e.message||'Gagal menghapus dari cloud', true); return; } }
+        state.chats = state.chats.filter(c=>c.group!==g);
+        if(state.activeChatId && !state.chats.some(c=>c.id===state.activeChatId)) state.activeChatId = null;
+        chatGroups = chatGroups.filter(x=>x!==g);
+        collapsedGroups = collapsedGroups.filter(x=>x!==g);
+        if(activeGroup===g) activeGroup = null;
+        save(); saveGroups(); renderSidebar(); if(currentView==='chat') renderChat();
+        toast(`Grup "${g}" dihapus`); return;
+      }
+      // klik nama grup → toggle tampilkan/sembunyikan isi grup (sama seperti chevron)
+      const i = collapsedGroups.indexOf(g);
+      if(i>=0) collapsedGroups.splice(i,1); else collapsedGroups.push(g);
+      activeGroup = g;
+      saveGroups(); renderSidebar();
+    };
+    row.ondblclick = async e=>{
+      if(e.target.closest('[data-ga]')) return;
+      const name = await inputDialog({icon:'folder', title:'Ubah nama grup', value:g, confirm:'Simpan'});
+      if(name && name.trim()){
+        const nn = name.trim(), i = chatGroups.indexOf(g); chatGroups[i]=nn;
+        state.chats.forEach(c=>{ if(c.group===g) c.group=nn; });
+        if(activeGroup===g) activeGroup=nn;
+        const ci = collapsedGroups.indexOf(g); if(ci>=0) collapsedGroups[ci]=nn;
+        save(); saveGroups(); renderSidebar();
+      }
+    };
   });
   $('#grp-add').onclick = async ()=>{
     const name = await inputDialog({icon:'folder', title:'Buat grup baru', placeholder:'Nama grup (mis. Kerja, Kuliah, Pribadi)', confirm:'Buat grup'});
@@ -1501,8 +1606,8 @@ function renderSidebar(){
   const list = $('#chat-list');
   const allChats = state.chats;
   if(!allChats.length){ list.innerHTML = '<div class="sb-empty">Belum ada percakapan. Mulai dengan menulis pesan pertama.</div>'; return; }
-  const visible = activeGroup==='Semua' ? allChats : allChats.filter(c=>c.group===activeGroup);
-  const others = activeGroup==='Semua' ? [] : allChats.filter(c=>c.group!==activeGroup && !c.group);
+  const visible = allChats.filter(c=>!c.group);
+  const others = [];
   const now = new Date(); const startToday = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
   const groups = [['Disematkan',[]],['Terbaru',[]],['Kemarin',[]],['7 hari terakhir',[]],['30 hari terakhir',[]],['Lebih lama',[]]];
   [...visible].sort((a,b)=>b.updatedAt-a.updatedAt).forEach(c=>{
@@ -1524,10 +1629,7 @@ function renderSidebar(){
           <button class="icon-btn sm" data-a="del" title="Hapus" aria-label="Hapus">${icon('trash')}</button>
         </span>
       </div>`).join('')
-  ).join('') + (others.length ? `<div class="group-label">Tanpa grup</div>` + others.map(c=>`
-      <div class="chat-item dim" data-id="${c.id}" role="button" tabindex="0"><span class="t">${esc(c.title)}</span>
-        <span class="acts"><button class="icon-btn sm" data-a="grp" title="Masukkan ke grup ${esc(activeGroup)}" aria-label="Masukkan ke grup">${icon('folder')}</button></span>
-      </div>`).join('') : '') + (!visible.length && !others.length ? '<div class="sb-empty">Grup ini masih kosong. Pindahkan obrolan ke sini lewat ikon folder.</div>' : '');
+  ).join('') + (!visible.length ? `<div class="sb-empty">${chatGroups.length ? 'Semua obrolan sudah masuk grup. Buka grup di atas untuk melihatnya.' : 'Belum ada percakapan. Mulai dengan menulis pesan pertama.'}</div>` : '');
   requestAnimationFrame(()=>{ $$('#chat-list .chat-item .t').forEach(t=>{ if(!t.classList.contains('title-loading')) marqueeIfOverflow(t); }); });
 }
 $('#chat-list').addEventListener('click', e=>{
@@ -1536,18 +1638,45 @@ $('#chat-list').addEventListener('click', e=>{
   if(a==='pin'){ togglePin(item.dataset.id); return; }
   if(a==='del'){ deleteChat(item.dataset.id); return; }
   if(a==='grp'){ moveToGroup(item.dataset.id); return; }
+  if(a==='ungrp'){ removeFromGroup(item.dataset.id); return; }
   openChat(item.dataset.id);
+});
+function removeFromGroup(id){
+  const c = state.chats.find(x=>x.id===id); if(!c || !c.group) return;
+  const from = c.group; delete c.group;
+  save(); renderSidebar(); toast(`"${c.title}" dikeluarkan dari grup "${from}"`);
+}
+// item chat di dalam daftar grup (event delegation, karena #grp-bar di-render ulang)
+document.addEventListener('click', e=>{
+  const gl = e.target.closest('#grp-bar .chat-item'); if(!gl) return;
+  const a = e.target.closest('[data-a]')?.dataset.a;
+  if(a==='pin'){ togglePin(gl.dataset.id); return; }
+  if(a==='del'){ deleteChat(gl.dataset.id); return; }
+  if(a==='ungrp'){ removeFromGroup(gl.dataset.id); return; }
+  openChat(gl.dataset.id);
 });
 async function moveToGroup(id){
   const c = state.chats.find(x=>x.id===id); if(!c) return;
-  const opts = ['— Tanpa grup —', ...chatGroups.filter(g=>g!=='Semua')];
-  const pick = await inputDialog({icon:'folder', title:`Pindahkan "${c.title}" ke grup`, value:c.group||'', placeholder:'Ketik nama grup atau pilih dari daftar', confirm:'Pindahkan'});
-  if(pick===null) return;
-  let target = opts[+pick-1] || pick.trim();
-  if(target==='— Tanpa grup —' || !target) target = null;
-  else if(!chatGroups.includes(target)){ chatGroups.push(target); saveGroups(); }
-  if(target){ c.group = target; } else delete c.group;
-  save(); renderSidebar(); toast(target ? `Dipindahkan ke grup "${target}"` : 'Dikeluarkan dari grup');
+  // 1) pilih grup yang sudah ada, atau buat baru
+  const opts = [
+    ...(c.group ? [{value:'__none', label:'— Keluarkan dari grup —', desc:'Kembali ke daftar utama'}] : []),
+    ...chatGroups.map(g=>({value:g, label:g, desc:`${state.chats.filter(x=>x.group===g).length} obrolan`, selected:c.group===g})),
+    {value:'__new', label:'+ Buat grup baru…', desc:'Langsung ketik nama grup baru'}
+  ];
+  let pick = await dialog({icon:'folder', title:`Pindahkan "${c.title}" ke grup`, options:opts, confirm:'Pindahkan'});
+  if(pick===null || pick===false) return;
+  if(pick==='__none'){ delete c.group; save(); renderSidebar(); toast('Dikeluarkan dari grup'); return; }
+  let target = pick;
+  if(pick==='__new'){
+    // inputDialog memakai elemen #dlg yang sama → tunggu dialog pertama benar-benar tertutup
+    await new Promise(r=>setTimeout(r, 180));
+    const name = await inputDialog({icon:'folder', title:'Buat grup baru', placeholder:'Nama grup (mis. Kerja, Kuliah, Pribadi)', confirm:'Buat & pindahkan'});
+    if(!name || !name.trim()) return;
+    target = name.trim();
+    if(!chatGroups.includes(target)){ chatGroups.push(target); saveGroups(); }
+  }
+  c.group = target;
+  save(); renderSidebar(); toast(`Dipindahkan ke grup "${target}"`);
 }
 $('#chat-list').addEventListener('keydown', e=>{ if(e.key==='Enter' && e.target.classList.contains('chat-item')) openChat(e.target.dataset.id); });
 
@@ -1909,7 +2038,7 @@ async function openCamera(){
   let facing = (isMobile() || isTouch) ? 'environment' : 'user';
   const flipBtn = card.querySelector('#cam-flip');
   flipBtn.style.display = (isMobile() || isTouch) ? '' : 'none';
-  const close = ()=>{ stream.getTracks().forEach(t=>t.stop()); ov.remove(); card.remove(); };
+  const close = ()=>{ stream.getTracks().forEach(t=>t.stop()); card.classList.add('closing'); ov.classList.add('closing'); setTimeout(()=>{ ov.remove(); card.remove(); }, 270); };
   ov.onclick = close; card.querySelector('#cam-close').onclick = close; card.querySelector('.x').onclick = close;
   flipBtn.onclick = async ()=>{
     facing = facing === 'environment' ? 'user' : 'environment';
@@ -1942,7 +2071,11 @@ function openAttachMenu(){
   const scrim = document.createElement('div'); scrim.className = 'am-scrim'; scrim.id = 'am-scrim';
   document.body.appendChild(scrim);
   m.hidden = false;
-  const close = ()=>{ m.hidden = true; scrim.remove(); };
+  const close = ()=>{
+    if(m.classList.contains('closing')) return;
+    m.classList.add('closing'); scrim.classList.add('closing');
+    setTimeout(()=>{ m.hidden = true; m.classList.remove('closing'); scrim.remove(); }, 270);
+  };
   scrim.onclick = close; m.querySelector('.x').onclick = close;
   m.querySelector('[data-act=cam]').onclick = ()=>{ close(); openCamera(); };
   m.querySelector('[data-act=photo]').onclick = ()=>{ close(); $('#file').click(); };
@@ -2496,7 +2629,7 @@ sInput.onkeydown = e=>{
 document.addEventListener('keydown', e=>{
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); sModal.classList.contains('open') ? closeSearch() : openSearch(); }
   if((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='o'){ e.preventDefault(); newChat(); }
-  if(e.key==='Escape'){ closeSearch(); $('#lightbox').classList.remove('open'); closeMenus(); const am=$('#attach-menu'); if(am && !am.hidden){ am.hidden=true; $('#am-scrim')?.remove(); } }
+  if(e.key==='Escape'){ closeSearch(); $('#lightbox').classList.remove('open'); closeMenus(); const am=$('#attach-menu'); if(am && !am.hidden && !am.classList.contains('closing')){ am.classList.add('closing'); const sc=$('#am-scrim'); sc?.classList.add('closing'); setTimeout(()=>{ am.hidden=true; am.classList.remove('closing'); sc?.remove(); }, 270); } }
 });
 $('#btn-new').onclick = newChat;
 
@@ -3408,7 +3541,17 @@ const Drawer = (() => {
 
 // pindah layout saat orientasi/ukuran berubah
 let wasMobile = isMobile();
-addEventListener('resize', ()=>{ const m = isMobile(); if(m!==wasMobile){ wasMobile = m; if(currentView==='chat') renderChat(); } });
+addEventListener('resize', ()=>{
+  const m = isMobile();
+  if(m!==wasMobile){ wasMobile = m; if(currentView==='chat') renderChat(); }
+  // hitung ulang batas tinggi daftar grup
+  const gl = $('#grp-bar'), foot = gl?.closest('.sidebar')?.querySelector('.sb-foot');
+  if(gl && foot){
+    const top = gl.getBoundingClientRect().top, footTop = foot.getBoundingClientRect().top;
+    const reserve = Math.min(280, (footTop - top) * .55);
+    gl.style.maxHeight = Math.max(140, footTop - top - reserve) + 'px';
+  }
+});
 
 /* ================= PWA: pasang & offline ================= */
 let installEvt = null;

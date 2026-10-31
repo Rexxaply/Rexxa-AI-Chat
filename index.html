@@ -2241,29 +2241,17 @@ function renderFileChip(){
   chip.querySelector('.fx').onclick = ()=>{ pendingFileType = null; renderFileChip(); };
   c.insertBefore(chip, c.querySelector('.c-row'));
 }
-$('#btn-file-tool').onclick = ()=>{
-  const cur = chat(); let holder = null;
-  if(cur){
-    holder = document.createElement('div'); holder.className = 'msg assistant enter';
-    holder.innerHTML = `<div class="ai-head"><span class="p-emoji" style="background:${profile().color}">${esc(profile().emoji)}</span><span class="nm">${esc(profile().name)}</span></div><div class="ai-body"><div class="md-c"></div></div>`;
-    msgsEl.appendChild(holder); thread.hidden = false; $('#welcome').style.display = 'none'; scrollDown();
-  }
-  const body = holder ? holder.querySelector('.md-c') : null;
-  const card = document.createElement('div'); card.className = 'ft-card';
-  card.innerHTML = `<b>Buat file dari jawaban AI</b>
-    <p style="margin:4px 0 0;font-size:12.5px;color:var(--muted)">Pilih format, lalu tulis perintah kontennya di kolom pesan dan kirim seperti biasa.</p>
-    <div class="ft-grid">${FILE_TYPES.map((t,i)=>`<button class="ft-opt${i===0?' sel':''}" data-k="${t.k}">${icon('filePlus')}${t.label}</button>`).join('')}</div>`;
-  card.querySelectorAll('.ft-opt').forEach(b=>b.onclick = ()=>{
-    card.querySelectorAll('.ft-opt').forEach(x=>x.classList.remove('sel')); b.classList.add('sel');
-    pendingFileType = FILE_TYPES.find(t=>t.k===b.dataset.k); renderFileChip();
+$('#btn-file-tool').onclick = async ()=>{
+  const pick = await dialog({
+    tone:'info', icon:'filePlus', title:'Buat file dari jawaban AI',
+    html:'Pilih format file. Setelah itu, tulis konten yang diinginkan di kolom pesan lalu kirim — file akan <b>terunduh otomatis</b> setelah AI selesai menulis.',
+    confirm:'Pakai format ini', cancel:'Batal',
+    options: FILE_TYPES.map((t,i)=>({value:t.k, label:t.label, desc:{ppt:'Slide presentasi, tiap heading jadi 1 slide',doc:'Dokumen teks yang bisa dibuka di Microsoft Word',xls:'Tabel spreadsheet (dari tabel Markdown)',pdf:'Lewat dialog print browser → Save as PDF',html:'Halaman web siap buka di browser',md:'Catatan Markdown',txt:'Teks polos',csv:'Data dipisah koma untuk Excel'}[t.k], selected:i===0}))
   });
-  const row = document.createElement('div'); row.className = 'btns'; row.style.marginTop = '10px';
-  const ok = document.createElement('button'); ok.className = 'btn primary'; ok.innerHTML = `${icon('check')}Pakai format ini`;
-  ok.onclick = ()=>{ pendingFileType = FILE_TYPES.find(t=>t.k===card.querySelector('.ft-opt.sel').dataset.k); renderFileChip(); card.remove(); input.focus(); toast(`Mode file: ${pendingFileType.label}. Tulis konten yang diinginkan lalu kirim.`); };
-  const cancel = document.createElement('button'); cancel.className = 'btn'; cancel.textContent = 'Batal';
-  cancel.onclick = ()=>{ card.remove(); if(holder && !holder.querySelector('.md-c')?.childNodes.length) holder.remove(); if(!chat()?.messages.length){ thread.hidden = true; $('#welcome').style.display='flex'; } };
-  row.append(ok, cancel);
-  (body || $('#messages')).appendChild(card); card.appendChild(row); scrollDown();
+  if(!pick) return;
+  pendingFileType = FILE_TYPES.find(t=>t.k===pick);
+  renderFileChip(); input.focus();
+  toast(`Mode file: ${pendingFileType.label}. Tulis konten lalu kirim.`);
 };
 function htmlDoc(title, body){
   return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${ftEsc(title)}</title><style>body{font-family:Calibri,Arial,sans-serif;line-height:1.6;padding:32px;max-width:820px;margin:auto}h1,h2,h3{color:#1a1a2e}</style></head><body>${body}</body></html>`;

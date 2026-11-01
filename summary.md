@@ -2,7 +2,7 @@
 
 Dokumen ini merangkum seluruh riwayat commit GitHub dari awal proyek hingga sekarang.
 
-**Repo:** `rexxa-ai` · **Branch:** `main` · **Total commit:** 11 · **Periode:** 2026-11-01
+**Repo:** `rexxa-ai` · **Branch:** `main` · **Total commit:** 8 · **Periode:** 2026-11-01
 
 ---
 
@@ -18,9 +18,6 @@ Dokumen ini merangkum seluruh riwayat commit GitHub dari awal proyek hingga seka
 | 6 | `bc93da5` | 2026-11-01 | 🐛 **fix:** file tool pakai dialog tengah agar selalu terlihat |
 | 7 | `4463ddb` | 2026-11-01 | ✨ **feat:** pisah bubble foto & teks, dropdown thinking radio style, dialog input grup custom, footer chat baru di bawah |
 | 8 | `6261d42` | 2026-11-01 | ✨ **feat:** sidebar grup vertikal (chevron collapse, hapus/sematkan grup, keluarkan dari grup), sheet iOS smooth, scroll sidebar modern & dinamis |
-| 9 | `a977b48` | 2026-11-01 | 📝 **docs:** tambah summary.md riwayat pengembangan |
-| 10 | `dba93ab` | 2026-11-01 | 🐛✨ **fix+feat:** perbaiki deleteChats scope, pencarian web multi-sumber dengan kueri AI & tampilan sumber, optimalisasi responsif semua perangkat |
-| 11 | `6b0bb0f` | 2026-11-01 | 🔒 **security:** safeUrl scheme allowlist untuk URL tak tepercaya (fix stored XSS di sources & tool file card) |
 
 ---
 
@@ -70,31 +67,16 @@ File tool dipindah ke dialog tengah agar selalu terlihat dan tidak tertutup elem
 - **Sheet "Tambahkan ke chat"**: animasi slide-from-bottom halus ala iOS (`cubic-bezier(.32,.72,0,1)`), lengkap dengan animasi tutup.
 - **Scroll sidebar modern**: scrollbar tipis menyatu dengan background (sama seperti area chat), tinggi daftar grup dihitung dinamis agar daftar "Terbaru" tidak pernah tenggelam.
 
-### 9️⃣ `a977b48` — Dokumentasi
-- Menambahkan file `summary.md` ini: ringkasan riwayat pengembangan dari awal proyek.
-
-### 🔟 `dba93ab` — Perbaikan Sync, Pencarian Web & Responsif
-- **Fix:** scope `deleteChats` yang sebelumnya error saat menghapus chat dari cloud.
-- **Pencarian web multi-sumber**: kueri pencarian dibuat oleh AI dari konteks percakapan, hasil dari SearXNG + Google News RSS, dan tampilan daftar sumber (judul + host) di bawah jawaban AI.
-- **Responsif menyeluruh**: breakpoint 820px, dukungan tablet/ponsel kecil/landscape, anti-overflow, dan touch target yang nyaman.
-
-### 1️⃣1️⃣ `6b0bb0f` — Fix Stored XSS (Audit Keamanan)
-- **Helper `safeUrl()`** baru: allowlist skema URL ketat (`https:`, `http:`, `blob:`, plus `data:image/*` opsional) — menolak `javascript:`, `vbscript:`, `data:text/html`, dan varian case/whitespace.
-- **Fix F1:** URL "sumber web" di jawaban AI divalidasi sebelum dirender — menutup stored XSS yang bisa tersinkron ke semua perangkat lewat Supabase.
-- **Fix F2:** URL kartu file hasil tool divalidasi + di-escape — menutup stored XSS via `download_url` jahat dan breakout atribut.
-- Diverifikasi dengan unit test (9/9 PASS) dan syntax check penuh.
-
 ---
 
 ## 🏷️ Statistik
 
 - **Commit fitur (`feat`):** 5
-- **Commit keamanan (`security`):** 3
-- **Commit perbaikan (`fix`):** 2 (1 murni fix, 1 gabungan fix+feat)
-- **Commit dokumentasi (`docs`):** 1
+- **Commit keamanan (`security`):** 2
+- **Commit perbaikan (`fix`):** 1
 - **File utama:** `index.html` (arsitektur single-file)
 - **Pendukung:** `manifest.webmanifest`, `sw.js`, `icons/`, `supabase.sql`
 
 ---
 
-> Dibuat otomatis dari `git log` branch `main`. Terakhir diperbarui: commit `6b0bb0f`.
+> Dibuat otomatis dari `git log` branch `main`. Terakhir diperbarui: commit `6261d42`.

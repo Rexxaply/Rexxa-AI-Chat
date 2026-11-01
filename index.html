@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>REXXA AI</title>
-<meta name="description" content="REXXA AI � asisten AI multi-model dengan profil, pencarian, dan statistik penggunaan.">
+<meta name="description" content="REXXA AI â€“ asisten AI multi-model dengan profil, pencarian, dan statistik penggunaan.">
 <meta name="theme-color" content="#121019">
 <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
@@ -55,7 +55,7 @@ body{
   background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55;
   -webkit-font-smoothing:antialiased;overflow:hidden;
 }
-/* Latar gradasi hidup ala Gemini: ungu ? biru ? putih, bergerak perlahan */
+/* Latar gradasi hidup ala Gemini: ungu â†’ biru â†’ putih, bergerak perlahan */
 body::before{
   content:"";position:fixed;inset:-40%;z-index:0;pointer-events:none;
   background:
@@ -174,13 +174,6 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .me .s{font-size:12px;color:var(--muted)}
 
 .scrim{display:none}
-/* Scrim sheet mobile: anak .main, tapi saat menu terbuka ia di-lift ke <body> (lihat JS liftMenu)
-   sehingga selector body:has(...) aktif dan urutan z-index di root pasti benar: sheet 130 > scrim 25. */
-.sheet-scrim{display:none}
-@media (max-width:820px){
-  .sheet-scrim{display:block;position:fixed;inset:0;background:rgba(5,4,10,.55);z-index:25;opacity:0;pointer-events:none;transition:opacity .18s ease}
-  body:has(.menu.open) .sheet-scrim{opacity:1;pointer-events:auto}
-}
 .sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px;background:var(--muted)}
 .sync-dot.ok{background:var(--ok)}
 .sync-dot.busy{background:var(--blue);animation:blink 1s steps(2) infinite}
@@ -259,9 +252,6 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .welcome p.greet-desc{margin:2px 0 28px;font-size:14px;text-align:center;width:100%;color:var(--muted)}
 .welcome p:has(+ .greet-desc:not([hidden])){margin-bottom:2px}
 .welcome .composer-wrap{width:100%;max-width:720px;padding:0}
-/* composer yang dipindah ke welcome mewarisi text-align:center; kembalikan kontennya rata kiri (chip pencarian web, dsb.) */
-.welcome .composer{text-align:left}
-.welcome #tool-chips{display:flex;justify-content:flex-start}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;max-width:720px}
 .chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(28,24,39,.6);color:var(--text-2);font-size:13.5px}
 .chip:hover{border-color:var(--purple);color:var(--text);background:var(--purple-soft)}
@@ -280,29 +270,6 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .bubble-notes{background:transparent;border-style:dashed;padding:8px 14px}
 .bubble-notes .img-note{margin-bottom:0;background:transparent;border:0;padding:0}
 .ai-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-
-/* ---- Tool calling: indikator proses & kartu file hasil ---- */
-.tool-run{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px 13px;margin:10px 0;max-width:min(430px,100%)}
-.tool-run .orb{flex:none}
-.tool-run.ok{border-color:var(--ok);color:var(--ok)}
-.tool-run.ok svg.i{color:var(--ok)}
-.tool-run.err{border-color:var(--danger);color:var(--danger)}
-.tool-run .tr-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tool-file{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:10px;margin:12px 0 2px;max-width:min(430px,100%);cursor:pointer;transition:border-color .18s,transform .14s var(--ease)}
-.tool-file:hover{border-color:var(--accent)}
-.tool-file:active{transform:scale(.98)}
-.tool-file .tf-thumb{flex:none;width:64px;height:64px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:var(--surface)}
-.tool-file .tf-info{flex:1;min-width:0}
-.tool-file .tf-name{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tool-file .tf-meta{font-size:12px;color:var(--muted);margin-top:2px}
-.tool-file .tf-dl{flex:none}
-.tool-file .tf-icon{flex:none;display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:var(--accent,#7C3AED);color:#fff}
-.tool-file .tf-icon svg{width:24px;height:24px}
-@media (max-width:520px){
-  .tool-file{gap:10px;padding:9px}
-  .tool-file .tf-thumb{width:52px;height:52px}
-  .tool-file .tf-dl{padding:8px 12px;font-size:13px}
-}
 .ai-head .nm{font-weight:600;font-size:14px}
 .ai-head .md{font-size:12px;color:var(--muted);font-family:var(--mono)}
 .ai-body{padding-left:38px;max-width:100%;overflow-wrap:anywhere}
@@ -427,7 +394,7 @@ kbd{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid v
 .mi-model{font-family:var(--mono);font-size:11.5px;color:var(--purple-2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title-loading{background:linear-gradient(90deg,var(--muted) 0%,#fff 45%,#A5C4FD 55%,var(--muted) 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent !important;animation:shimmer 1.3s linear infinite}
 @keyframes shimmer{from{background-position:120% 0}to{background-position:-120% 0}}
-/* Marquee: teks meluap bergulir kanan?kiri, berhenti, lalu ulang */
+/* Marquee: teks meluap bergulir kananâ†’kiri, berhenti, lalu ulang */
 .mq{display:inline-block;max-width:100%;overflow:hidden;white-space:nowrap;vertical-align:bottom}
 .mq-run{display:inline-block;white-space:nowrap;will-change:transform;animation:mqSlide var(--mq-dur,10s) ease-in-out var(--mq-delay,1.2s) infinite}
 @keyframes mqSlide{0%{transform:translateX(0)}var(--mq-pct,50%){transform:translateX(var(--mq-shift,-100px))}100%{transform:translateX(var(--mq-shift,-100px))}}
@@ -768,6 +735,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
 .welcome.enter>*{animation:viewIn .5s var(--ease) both}
 .welcome.enter>*:nth-child(2){animation-delay:.04s}.welcome.enter>*:nth-child(3){animation-delay:.08s}.welcome.enter>*:nth-child(4){animation-delay:.12s}.welcome.enter>*:nth-child(5){animation-delay:.16s}
 .menu.closing{animation:menuOut .16s ease-in forwards}
+body:has(.menu.closing) .menu-scrim{animation:fadeOut .18s ease-in forwards}
 .modal.open .search-card{animation:zoomIn .24s var(--ease)}
 .modal.closing{animation:fadeOut .16s ease-in forwards}
 .lightbox.open img{animation:zoomIn .3s var(--spring)}
@@ -789,6 +757,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
 
 /* ================= Mobile-first polish ================= */
 .only-mobile{display:none !important}
+.menu-scrim{display:none}
 @keyframes sheet{from{transform:translate(var(--tx,0),100%);opacity:.6}to{transform:translate(var(--tx,0),0);opacity:1}}
 @keyframes scrimIn{from{opacity:0}to{opacity:1}}
 @keyframes scrimOut{from{opacity:1}to{opacity:0}}
@@ -801,13 +770,6 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
   /* top bar */
   .topbar{height:52px;padding:0 6px;gap:2px;background:linear-gradient(var(--bg) 60%, transparent)}
   .topbar .icon-btn{width:42px;height:42px;border-radius:12px}
-  /* chip model pindah ke topbar saat mobile (elemen .model-wrap dipindah JS) */
-  .topbar .model-wrap{position:relative;flex:none;min-width:0}
-  .topbar .model-pick{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:7px 8px 7px 6px;gap:6px;min-width:0;max-width:34vw}
-  .topbar .model-pick .p-emoji{width:24px;height:24px;font-size:13px}
-  .topbar .model-pick .mp-name{display:block;max-width:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
-  .topbar .model-pick .mp-model{display:none !important}
-  .topbar .model-pick svg.i{flex:none}
   .topbar .title{flex:1;max-width:none;text-align:center;font-size:15px;color:var(--text);padding:6px 4px}
   .topbar .spacer{display:none}
   .chat-tok{display:none !important}
@@ -822,11 +784,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
   .nav-item{padding:11px 12px;font-size:15px}
   .sb-new{padding:11px 12px;font-size:15.5px}
   .chat-item{padding:11px 12px;font-size:15px;border-radius:12px}
-  /* mobile: tombol aksi (grup/sematkan/hapus) hanya tampil & bisa ditekan pada chat yang sedang dipilih.
-     Pakai visibility+pointer-events (bukan display) agar menimpa aturan :hover/:focus-within desktop �
-     di HP, hover melekat setelah tap dan :focus-within aktif karena item punya tabindex. */
-  .chat-item .acts{display:none !important;visibility:hidden;pointer-events:none}
-  .chat-item.active .acts{display:flex !important;visibility:visible;pointer-events:auto}
+  .chat-item .acts{display:flex}
   .chat-item .icon-btn.sm{width:34px;height:34px}
   .nav-item kbd{display:none}
   .me{padding:10px}
@@ -873,7 +831,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
   .menu-item{padding:12px;font-size:15.5px;border-radius:12px;min-height:48px}
   .menu-item .p-emoji{width:34px;height:34px;font-size:17px}
   .menu-head{font-size:13px;padding:0 12px 6px}
-  /* scrim sheet diatur oleh .sheet-scrim (anak .main, z-25): gelapkan topbar, sheet (130) tetap tajam */
+  body:has(.menu.open) .menu-scrim{display:block;position:fixed;inset:0;background:rgba(5,4,10,.55);z-index:120;animation:pop .15s ease-out}
 
   /* search full screen */
   .modal{padding:0}
@@ -924,7 +882,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
 }
 
 /* ================= Optimalisasi responsif lintas perangkat ================= */
-/* 1) Tablet / jendela sempit (761�1024px): sidebar lebih ramping & konten tetap lega */
+/* 1) Tablet / jendela sempit (761â€“1024px): sidebar lebih ramping & konten tetap lega */
 @media (min-width:821px) and (max-width:1024px){
   :root{--sidebar:236px}
   .dash-inner{max-width:100%}
@@ -935,14 +893,13 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
 @media (min-width:1440px){
   .dash-inner{max-width:1120px}
 }
-/* 3) Ponsel kecil (=380px): perketat spacing agar tidak ada yang terpotong */
+/* 3) Ponsel kecil (â‰¤380px): perketat spacing agar tidak ada yang terpotong */
 @media (max-width:380px){
   .thread-inner{padding:4px 10px 16px}
   .bubble-user{max-width:92%}
   .topbar{gap:0}
   .topbar .icon-btn{width:38px;height:38px}
-  .model-pick{max-width:30vw}
-  .topbar .model-pick{max-width:30vw}
+  .model-pick .mp-name{max-width:22vw}
   .composer-wrap{padding:0 8px calc(6px + env(safe-area-inset-bottom,0px))}
   .c-row{gap:1px}
   .dash-inner{padding:6px 10px 40px}
@@ -959,7 +916,7 @@ mark{background:rgba(139,92,246,.35);color:#fff;border-radius:3px;padding:0 2px}
   .am-tile span{font-size:12px}
   .src-item .h{display:none}
 }
-/* 4) Ponsel sangat pendek (landscape, =480px tinggi): padatkan vertikal */
+/* 4) Ponsel sangat pendek (landscape, â‰¤480px tinggi): padatkan vertikal */
 @media (max-height:480px){
   .welcome{padding:8px 16px 2vh}
   .welcome .spark{width:30px;height:30px;margin-bottom:8px}
@@ -1022,7 +979,6 @@ img,video,canvas,svg{max-width:100%}
 
   <!-- Main -->
   <main class="main">
-    <div class="sheet-scrim" id="sheet-scrim"></div>
     <header class="topbar">
       <button class="icon-btn burger" id="btn-open-sb" title="Buka menu" aria-label="Buka menu" hidden></button>
       <button class="title" id="chat-title" title="Klik untuk mengganti nama">Percakapan baru</button>
@@ -1069,7 +1025,7 @@ img,video,canvas,svg{max-width:100%}
         <div class="composer" id="composer">
           <div class="attach-row" id="attach-row"></div>
           <label for="input" class="sr">Pesan</label>
-          <textarea id="input" rows="1" placeholder="Tulis pesan untuk REXXA�"></textarea>
+          <textarea id="input" rows="1" placeholder="Tulis pesan untuk REXXAâ€¦"></textarea>
           <div class="c-row">
             <input type="file" id="file" accept="image/*" multiple hidden>
             <input type="file" id="file-cam" accept="image/*" capture="environment" hidden>
@@ -1083,13 +1039,13 @@ img,video,canvas,svg{max-width:100%}
               <div class="menu up" id="think-menu"></div>
             </div>
             <div class="spacer"></div>
-            <button class="icon-btn" id="btn-file-tool" title="Buat file (PPT, DOC, XLS, PDF�)" aria-label="Buat file" data-icon="filePlus"></button>
+            <button class="icon-btn" id="btn-file-tool" title="Buat file (PPT, DOC, XLS, PDFâ€¦)" aria-label="Buat file" data-icon="filePlus"></button>
             <div style="position:relative" class="model-wrap"><button class="model-pick" id="model-pick" aria-haspopup="true" title="Ganti profil AI"><span class="p-emoji" id="mp-emoji"></span><span class="mp-name" id="mp-name"></span><span class="mp-model" id="mp-model"></span><span data-icon="chevDown"></span></button><div class="menu up" id="model-menu"></div></div>
             <button class="send" id="btn-send" aria-label="Kirim" disabled data-icon="arrowUp"></button>
           </div>
         </div>
         <div class="attach-menu" id="attach-menu" hidden></div>
-        <div class="hint" id="hint">Enter untuk kirim � Shift + Enter untuk baris baru � AI bisa keliru, periksa info penting.</div>
+        <div class="hint" id="hint">Enter untuk kirim Â· Shift + Enter untuk baris baru Â· AI bisa keliru, periksa info penting.</div>
       </div>
     </section>
 
@@ -1137,7 +1093,7 @@ img,video,canvas,svg{max-width:100%}
               <div class="box"><h3>Per model</h3><p class="sub">Token In/Out dan kecepatan rata-rata (TPS)</p><div id="us-models"></div></div>
               <div class="box"><h3>Per profil AI</h3><p class="sub">Jumlah pesan yang dibalas</p><div id="us-profiles"></div></div>
             </div>
-            <p class="sub" style="margin-top:14px">Angka ditandai � adalah perkiraan (�4 karakter per token) saat penyedia API tidak mengirim data penggunaan.</p>
+            <p class="sub" style="margin-top:14px">Angka ditandai â‰ˆ adalah perkiraan (Â±4 karakter per token) saat penyedia API tidak mengirim data penggunaan.</p>
             <button class="btn danger" id="us-reset" style="margin-top:6px"><span data-icon="refresh"></span>Reset statistik perangkat ini</button>
           </div>
 
@@ -1146,12 +1102,11 @@ img,video,canvas,svg{max-width:100%}
             <div class="box" style="max-width:680px">
               <div class="form">
                 <div class="field"><label for="s-url">Base URL (format OpenAI)</label><input class="input" id="s-url" placeholder="https://api.openai.com/v1"><div class="help">Bisa OpenAI, OpenRouter, Groq, Together, LM Studio, Ollama, dll.</div></div>
-                <div class="field"><label for="s-key">API key</label><div class="with-btn"><input class="input" id="s-key" type="password" placeholder="sk-�" autocomplete="off"><button class="btn" id="s-key-eye" aria-label="Tampilkan API key"><span data-icon="eye"></span></button></div><div class="help">Disimpan hanya di browser ini.</div></div>
+                <div class="field"><label for="s-key">API key</label><div class="with-btn"><input class="input" id="s-key" type="password" placeholder="sk-â€¦" autocomplete="off"><button class="btn" id="s-key-eye" aria-label="Tampilkan API key"><span data-icon="eye"></span></button></div><div class="help">Disimpan hanya di browser ini.</div></div>
                 <div class="row-2">
                   <div class="field"><label for="s-model">Model bawaan</label><input class="input" id="s-model" placeholder="gpt-4o" list="model-list"><datalist id="model-list"></datalist></div>
                   <div class="field"><label for="s-max">Maks. token keluaran</label><input class="input" id="s-max" type="number" min="1" placeholder="Kosongkan = otomatis"></div>
                 </div>
-                <div class="field"><label>Alat gambar AI (upscale)</label><div class="help">Bawaan &amp; otomatis aktif � berjalan sepenuhnya di perangkat ini (tanpa server). Saat kamu melampirkan gambar, AI bisa memperbesarnya 2�/4� dan mengirim hasilnya sebagai file PNG. Butuh model dengan dukungan function calling (mis. gpt-4o, gpt-4.1, atau model OpenRouter bertanda "tools").</div></div>
                 <div>
                   <div class="toggle-row"><div><div class="t">Streaming</div><div class="d">Tampilkan jawaban kata demi kata saat diketik AI</div></div><label class="switch"><input type="checkbox" id="s-stream"><span></span></label></div>
                   <div class="toggle-row"><div><div class="t">Hitung token akurat saat streaming</div><div class="d">Minta data token In/Out dari penyedia. Dimatikan otomatis jika penyedia menolak.</div></div><label class="switch"><input type="checkbox" id="s-usage"><span></span></label></div>
@@ -1176,12 +1131,12 @@ img,video,canvas,svg{max-width:100%}
                 <ol class="steps">
                   <li>Buat akun dan project baru di <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com</a>.</li>
                   <li>Buka <b>SQL Editor</b>, tempel kode di bawah, lalu klik <b>Run</b>.</li>
-                  <li>Buka <b>Project Settings ? API</b>, salin <b>Project URL</b> dan kunci <b>anon / publishable</b>.</li>
+                  <li>Buka <b>Project Settings â†’ API</b>, salin <b>Project URL</b> dan kunci <b>anon / publishable</b>.</li>
                 </ol>
                 <div class="sql-box"><div class="cb-head"><span>supabase.sql</span><button class="cb-copy" id="sy-copy-sql"><span data-icon="copy"></span><span>Salin SQL</span></button></div><pre id="sy-sql"></pre></div>
                 <div class="form" style="margin-top:16px">
                   <div class="field"><label for="sy-url">Project URL</label><input class="input" id="sy-url" placeholder="https://abcdxyz.supabase.co" autocomplete="off"></div>
-                  <div class="field"><label for="sy-key">Kunci anon / publishable</label><input class="input" id="sy-key" placeholder="eyJhbGciOi� atau sb_publishable_�" autocomplete="off"><div class="help">Jangan pakai kunci <b>service_role</b> atau <b>secret</b>.</div></div>
+                  <div class="field"><label for="sy-key">Kunci anon / publishable</label><input class="input" id="sy-key" placeholder="eyJhbGciOiâ€¦ atau sb_publishable_â€¦" autocomplete="off"><div class="help">Jangan pakai kunci <b>service_role</b> atau <b>secret</b>.</div></div>
                   <div class="btns"><button class="btn primary" id="sy-connect"><span data-icon="bolt"></span>Hubungkan</button><button class="btn" id="sy-disconnect" hidden><span data-icon="x"></span>Putuskan</button><span class="status" id="sy-cstatus"></span></div>
                 </div>
               </div>
@@ -1236,12 +1191,13 @@ img,video,canvas,svg{max-width:100%}
 <!-- Search -->
 <div class="modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Cari percakapan">
   <div class="search-card">
-    <div class="search-top"><span data-icon="search" style="color:var(--muted)"></span><input id="search-input" type="search" enterkeyhint="search" placeholder="Cari judul atau isi percakapan�" autocomplete="off"><kbd class="hide-mobile">Esc</kbd><button class="only-mobile search-cancel" id="search-close">Batal</button></div>
+    <div class="search-top"><span data-icon="search" style="color:var(--muted)"></span><input id="search-input" type="search" enterkeyhint="search" placeholder="Cari judul atau isi percakapanâ€¦" autocomplete="off"><kbd class="hide-mobile">Esc</kbd><button class="only-mobile search-cancel" id="search-close">Batal</button></div>
     <div class="search-res scroll" id="search-res"></div>
   </div>
 </div>
 <div class="modal lightbox" id="lightbox"><img id="lightbox-img" alt="Pratinjau gambar"><button class="btn" id="lb-download"><span data-icon="download"></span>Unduh PNG</button></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="menu-scrim" id="menu-scrim"></div>
 <div class="dlg-wrap" id="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t"><div class="dlg" id="dlg-box"><div class="dlg-ic" id="dlg-ic"></div><h3 id="dlg-t"></h3><div class="dlg-m" id="dlg-m"></div><div class="dlg-x" id="dlg-x"></div><div class="dlg-btns"><button class="btn" id="dlg-no">Batal</button><button class="btn primary" id="dlg-ok">OK</button></div></div></div>
 
 <script>
@@ -1271,7 +1227,6 @@ const ICONS = {
   sidebar:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/>',
   chevDown:'<path d="M6 9l6 6 6-6"/>',
   download:'<path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/>',
-  image:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 15l-5-5-6.5 6.5"/>',
   upload:'<path d="M12 20V9M7 13.5l5-5 5 5M5 4h14"/>',
   pin:'<path d="M12 17v4.5M8 3.5h8l-1 6 3 3V15H6v-2.5l3-3z"/>',
   dots:'<circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/>',
@@ -1311,11 +1266,11 @@ function hydrateIcons(root=document){
 const STORE_KEY = 'rexxa:v2';
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const COLORS = ['#8B5CF6','#6366F1','#3B82F6','#0EA5E9','#14B8A6','#EC4899','#F59E0B','#64748B'];
-const EMOJIS = ['?','??','??','??','??','??','??','??','??','??','?','??'];
+const EMOJIS = ['âœ¦','ðŸ¤–','ðŸ§ ','ðŸ’»','âœï¸','ðŸ“š','ðŸŽ¨','ðŸ“Š','ðŸ§ª','ðŸŒ™','âš¡','ðŸŽ¯'];
 const defaultProfiles = () => ([
-  {id:'p-default', name:'REXXA', emoji:'?', color:'#8B5CF6', description:'Asisten serba bisa yang ramah dan jelas', model:'', systemPrompt:'Kamu adalah REXXA, asisten AI yang ramah, jelas, dan membantu. Jawab dalam Bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan format Markdown bila membantu keterbacaan.'},
-  {id:'p-coder', name:'REXXA Code', emoji:'??', color:'#3B82F6', description:'Fokus pemrograman, debugging, dan review kode', model:'', systemPrompt:'Kamu adalah engineer senior. Berikan kode yang lengkap, rapi, dan siap jalan dalam blok kode bertanda bahasa. Jelaskan singkat alasan di balik solusi.'},
-  {id:'p-writer', name:'REXXA Writer', emoji:'??', color:'#EC4899', description:'Menulis konten, caption, dan menyunting teks', model:'', systemPrompt:'Kamu adalah penulis dan editor kreatif. Tulis dengan gaya yang hidup, natural, dan sesuai audiens. Tawarkan variasi bila diminta.'}
+  {id:'p-default', name:'REXXA', emoji:'âœ¦', color:'#8B5CF6', description:'Asisten serba bisa yang ramah dan jelas', model:'', systemPrompt:'Kamu adalah REXXA, asisten AI yang ramah, jelas, dan membantu. Jawab dalam Bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan format Markdown bila membantu keterbacaan.'},
+  {id:'p-coder', name:'REXXA Code', emoji:'ðŸ’»', color:'#3B82F6', description:'Fokus pemrograman, debugging, dan review kode', model:'', systemPrompt:'Kamu adalah engineer senior. Berikan kode yang lengkap, rapi, dan siap jalan dalam blok kode bertanda bahasa. Jelaskan singkat alasan di balik solusi.'},
+  {id:'p-writer', name:'REXXA Writer', emoji:'âœï¸', color:'#EC4899', description:'Menulis konten, caption, dan menyunting teks', model:'', systemPrompt:'Kamu adalah penulis dan editor kreatif. Tulis dengan gaya yang hidup, natural, dan sesuai audiens. Tawarkan variasi bila diminta.'}
 ]);
 let state = {
   user:{name:'Rexxa'},
@@ -1329,7 +1284,7 @@ let state = {
   tombstones:{}
 };
 
-/* Penyimpanan lokal: IndexedDB (ratusan MB) dengan cadangan localStorage (�5 MB) */
+/* Penyimpanan lokal: IndexedDB (ratusan MB) dengan cadangan localStorage (Â±5 MB) */
 const IDB = (() => {
   let dbp = null;
   const open = () => dbp || (dbp = new Promise((res, rej) => {
@@ -1401,12 +1356,12 @@ const fmtShort = n => n>=1e6 ? (n/1e6).toFixed(1).replace('.',',')+' jt' : n>=1e
 const estTokens = s => Math.ceil((s||'').length/4);
 const fmtDec = (n, d=1) => (n||0).toLocaleString('id-ID',{minimumFractionDigits:d, maximumFractionDigits:d});
 function tokChips(m){
-  const e = m.estimated ? '�' : '';
+  const e = m.estimated ? 'â‰ˆ' : '';
   const out = [];
   if(m.inTok!=null) out.push(`<span class="tk in ${m.estimated?'est':''}" title="Token masukan (prompt + riwayat + system prompt)">${icon('tokIn')}${e}${fmt(m.inTok)} in</span>`);
   if(m.tokens!=null) out.push(`<span class="tk out ${m.estimated?'est':''}" title="Token keluaran (jawaban AI)">${icon('tokOut')}${e}${fmt(m.tokens)} out</span>`);
-  if(m.tps) out.push(`<span class="tk tps" title="Tokens per second${m.ttft!=null?' � dihitung dari token pertama sampai selesai':' � termasuk waktu tunggu (non-streaming)'}">${icon('bolt')}${fmtDec(m.tps)} tok/dtk</span>`);
-  if(m.ttft!=null) out.push(`<span class="tk" title="Time to first token � jeda sampai token pertama muncul">${icon('clock')}${fmtDec(m.ttft/1000,2)} dtk TTFT</span>`);
+  if(m.tps) out.push(`<span class="tk tps" title="Tokens per second${m.ttft!=null?' â€“ dihitung dari token pertama sampai selesai':' â€“ termasuk waktu tunggu (non-streaming)'}">${icon('bolt')}${fmtDec(m.tps)} tok/dtk</span>`);
+  if(m.ttft!=null) out.push(`<span class="tk" title="Time to first token â€“ jeda sampai token pertama muncul">${icon('clock')}${fmtDec(m.ttft/1000,2)} dtk TTFT</span>`);
   if(m.ms) out.push(`<span class="tk" title="Total waktu permintaan">${fmtDec(m.ms/1000)} dtk</span>`);
   return out.join('');
 }
@@ -1415,9 +1370,9 @@ function renderChatTok(){
   if(!c || currentView!=='chat'){ el.hidden = true; return; }
   let i=0,o=0,est=false; c.messages.forEach(m=>{ if(m.role==='assistant'){ i+=m.inTok||0; o+=m.tokens||0; if(m.estimated) est=true; } });
   if(!i && !o){ el.hidden = true; return; }
-  el.hidden = false; const e = est?'�':'';
+  el.hidden = false; const e = est?'â‰ˆ':'';
   el.innerHTML = `${icon('tokIn')}<b>${e}${fmtShort(i)}</b><span class="sep"></span>${icon('tokOut')}<b>${e}${fmtShort(o)}</b>`;
-  el.title = `Token percakapan ini � In: ${fmt(i)}, Out: ${fmt(o)}`;
+  el.title = `Token percakapan ini â€“ In: ${fmt(i)}, Out: ${fmt(o)}`;
   el.querySelectorAll('svg')[0].style.color='var(--blue)'; el.querySelectorAll('svg')[1].style.color='var(--purple-2)';
 }
 const today = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1445,18 +1400,6 @@ function connFor(p){
 }
 const modelFor = p => connFor(p).model;
 const hostOf = u => { try{ return new URL(u).host; }catch{ return u; } };
-/* Hanya izinkan skema URL yang aman untuk href/src dari data tak tepercaya.
-   Menolak javascript:, vbscript:, data:text/html, dll. */
-const safeUrl = (u, {allowImageData=false}={}) => {
-  try{
-    const s = String(u||'').trim();
-    if(!s) return '#';
-    const p = new URL(s, location.href).protocol;
-    if(p==='https:' || p==='http:' || p==='blob:') return s;
-    if(allowImageData && p==='data:' && /^data:image\//i.test(s)) return s;
-    return '#';
-  }catch{ return '#'; }
-};
 const isLocal = u => /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(u);
 function relTime(t){
   const s = (Date.now()-t)/1000;
@@ -1464,7 +1407,7 @@ function relTime(t){
   if(s<86400) return Math.floor(s/3600)+' jam lalu'; if(s<86400*7) return Math.floor(s/86400)+' hari lalu';
   return new Date(t).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
 }
-// toast(pesan, tipe, aksi) � tipe: false/'success' | true/'error' | 'warn' | 'info'
+// toast(pesan, tipe, aksi) â€” tipe: false/'success' | true/'error' | 'warn' | 'info'
 function toast(msg, bad=false, action=null){
   const type = bad===true ? 'error' : (typeof bad==='string' ? bad : (action ? 'info' : 'success'));
   const box = $('#toasts');
@@ -1496,7 +1439,7 @@ function toast(msg, bad=false, action=null){
 
 /* Dialog konfirmasi yang lebih rapi (pengganti confirm/alert bawaan browser)
    dialog({title, message, html, tone:'danger'|'warn'|'info'|'success', confirm, cancel, options:[{value,label,desc}], requireText})
-   ? true/false, atau value opsi yang dipilih (null jika batal) */
+   â†’ true/false, atau value opsi yang dipilih (null jika batal) */
 function dialog(o){
   return new Promise(resolve => {
     const wrap = $('#dlg'), box = $('#dlg-box'), ok = $('#dlg-ok'), no = $('#dlg-no'), x = $('#dlg-x');
@@ -1609,7 +1552,7 @@ function renderMd(text){
       .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*<\/li>\n?)+/g,m=>'<ul>'+m.replace(/\n/g,'')+'</ul>')
       .replace(/\n/g,'<br>').replace(/(<br>)*(<pre|<ul)/g,'$2').replace(/(<\/pre>|<\/ul>)(<br>)*/g,'$1');
   }
-  // Tanpa DOMPurify (CDN gagal/diblokir): jangan pernah inject HTML mentah � render sebagai teks polos.
+  // Tanpa DOMPurify (CDN gagal/diblokir): jangan pernah inject HTML mentah â€” render sebagai teks polos.
   return window.DOMPurify ? DOMPurify.sanitize(html, {ADD_ATTR:['target']}) : esc(text).replace(/\n/g,'<br>');
 }
 function enhance(el, highlight=true){
@@ -1711,7 +1654,7 @@ function renderGroupBar(){
         save(); saveGroups(); renderSidebar(); if(currentView==='chat') renderChat();
         toast(`Grup "${g}" dihapus`); return;
       }
-      // klik nama grup ? toggle tampilkan/sembunyikan isi grup (sama seperti chevron)
+      // klik nama grup â†’ toggle tampilkan/sembunyikan isi grup (sama seperti chevron)
       const i = collapsedGroups.indexOf(g);
       if(i>=0) collapsedGroups.splice(i,1); else collapsedGroups.push(g);
       activeGroup = g;
@@ -1772,8 +1715,6 @@ function renderSidebar(){
 $('#chat-list').addEventListener('click', e=>{
   const item = e.target.closest('.chat-item'); if(!item) return;
   const a = e.target.closest('[data-a]')?.dataset.a;
-  // di mobile, abaikan klik tombol aksi pada chat yang tidak aktif (tombol disembunyikan CSS)
-  if(a && isMobile() && !item.classList.contains('active')){ openChat(item.dataset.id); return; }
   if(a==='pin'){ togglePin(item.dataset.id); return; }
   if(a==='del'){ deleteChat(item.dataset.id); return; }
   if(a==='grp'){ moveToGroup(item.dataset.id); return; }
@@ -1789,7 +1730,6 @@ function removeFromGroup(id){
 document.addEventListener('click', e=>{
   const gl = e.target.closest('#grp-bar .chat-item'); if(!gl) return;
   const a = e.target.closest('[data-a]')?.dataset.a;
-  if(a && isMobile() && !gl.classList.contains('active')){ openChat(gl.dataset.id); return; }
   if(a==='pin'){ togglePin(gl.dataset.id); return; }
   if(a==='del'){ deleteChat(gl.dataset.id); return; }
   if(a==='ungrp'){ removeFromGroup(gl.dataset.id); return; }
@@ -1799,16 +1739,16 @@ async function moveToGroup(id){
   const c = state.chats.find(x=>x.id===id); if(!c) return;
   // 1) pilih grup yang sudah ada, atau buat baru
   const opts = [
-    ...(c.group ? [{value:'__none', label:'� Keluarkan dari grup �', desc:'Kembali ke daftar utama'}] : []),
+    ...(c.group ? [{value:'__none', label:'â€” Keluarkan dari grup â€”', desc:'Kembali ke daftar utama'}] : []),
     ...chatGroups.map(g=>({value:g, label:g, desc:`${state.chats.filter(x=>x.group===g).length} obrolan`, selected:c.group===g})),
-    {value:'__new', label:'+ Buat grup baru�', desc:'Langsung ketik nama grup baru'}
+    {value:'__new', label:'+ Buat grup baruâ€¦', desc:'Langsung ketik nama grup baru'}
   ];
   let pick = await dialog({icon:'folder', title:`Pindahkan "${c.title}" ke grup`, options:opts, confirm:'Pindahkan'});
   if(pick===null || pick===false) return;
   if(pick==='__none'){ delete c.group; save(); renderSidebar(); toast('Dikeluarkan dari grup'); return; }
   let target = pick;
   if(pick==='__new'){
-    // inputDialog memakai elemen #dlg yang sama ? tunggu dialog pertama benar-benar tertutup
+    // inputDialog memakai elemen #dlg yang sama â†’ tunggu dialog pertama benar-benar tertutup
     await new Promise(r=>setTimeout(r, 180));
     const name = await inputDialog({icon:'folder', title:'Buat grup baru', placeholder:'Nama grup (mis. Kerja, Kuliah, Pribadi)', confirm:'Buat & pindahkan'});
     if(!name || !name.trim()) return;
@@ -1825,21 +1765,9 @@ const isMobile = () => matchMedia('(max-width:820px)').matches;
 function closeMobileSb(){ app.classList.remove('mobile-open'); }
 $('#btn-collapse').onclick = ()=>{ if(isMobile()) closeMobileSb(); else { app.classList.add('collapsed'); $('#btn-open-sb').hidden=false; } };
 $('#btn-open-sb').onclick = ()=>{ if(isMobile()) app.classList.add('mobile-open'); else { app.classList.remove('collapsed'); $('#btn-open-sb').hidden=true; } };
-$('#scrim').onclick = ()=>{ if($('.menu.open')) closeMenus(); closeMobileSb(); };
-$('#sheet-scrim').onclick = ()=>closeMenus();
-/* Pindahkan chip model antara composer (desktop) dan topbar (mobile).
-   Lokasi ditentukan dari PARENT (.c-row vs .topbar), bukan sibling � karena saat sheet
-   terbuka, #model-menu di-lift ke <body> dan sibling wrap berubah (bukan anchor lagi). */
-function syncModelPickHome(){
-  const wrap = $('#model-pick')?.closest('.model-wrap'); if(!wrap) return;
-  const mobile = isMobile();
-  const inTopbar = !!wrap.closest('.topbar');
-  if(mobile && !inTopbar) $('#btn-new-top').before(wrap);
-  else if(!mobile && inTopbar) $('#btn-send').before(wrap);
-}
-syncModelPickHome();
-addEventListener('resize', ()=>{ syncModelPickHome(); syncSbButton(); });
+$('#scrim').onclick = closeMobileSb;
 function syncSbButton(){ $('#btn-open-sb').hidden = !(isMobile() || app.classList.contains('collapsed')); }
+addEventListener('resize', syncSbButton);
 
 /* ================= Views ================= */
 let currentView = 'chat';
@@ -1902,9 +1830,7 @@ const SUGGEST = [
   ['bulb','Cari ide','Beri 5 ide proyek portofolio web developer yang unik beserta fitur utamanya.']
 ];
 function renderChat(){
-  const c = chat();
-  if(c && stripFileModeNote(c)) save();
-  const has = c && c.messages.length;
+  const c = chat(); const has = c && c.messages.length;
   $('#welcome').style.display = has ? 'none':'flex';
   thread.hidden = !has;
   $('#greet').textContent = greeting();
@@ -1935,34 +1861,6 @@ function renderChat(){
 $('#chips').addEventListener('click', e=>{ const b=e.target.closest('.chip'); if(!b) return; input.value=b.dataset.p; autoGrow(); updateSend(); input.focus(); });
 
 const enterIds = new Set();
-/* Kartu file dokumen hasil mode file (PPT/DOC/XLS/PDF/HTML/MD/TXT/CSV).
-   Konten disimpan di memori sesi (hemat storage chat); fallback: tertanam sebagai dataUrl. */
-const genFileStore = new Map(); // file_id -> {name, content, mime}
-const FILE_STORE_LIMIT = 2 * 1024 * 1024; // di atas 2 MB: hanya kartu sesi
-const genFileDataUrl = gf => gf.dataUrl || ('data:' + (gf.mime || 'application/octet-stream') + ';charset=utf-8,' + encodeURIComponent(gf.content || ''));
-function genFileCard(gf){
-  const cached = genFileStore.get(gf.file_id);
-  const url = cached ? URL.createObjectURL(new Blob([cached.content], {type: cached.mime || 'application/octet-stream'})) : genFileDataUrl(gf);
-  const size = gf.size_bytes ?? (cached ? cached.content.length : (gf.content || '').length);
-  const a = document.createElement('a');
-  a.className = 'tool-file'; a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-  const note = (!gf.dataUrl && !cached) ? ' � hanya sesi ini' : '';
-  a.innerHTML = `<span class="tf-icon">${icon('filePlus')}</span>
-    <span class="tf-info">
-      <span class="tf-name">${esc(gf.name)}</span>
-      <span class="tf-meta">${esc(gf.label || 'File')} � ${fmtBytes(size)}${note}</span>
-    </span>
-    <button class="btn tf-dl" type="button">${icon('download')}Unduh</button>`;
-  a.querySelector('.tf-dl').onclick = e=>{
-    e.preventDefault(); e.stopPropagation();
-    const dl = document.createElement('a');
-    dl.href = url; dl.download = gf.name;
-    document.body.appendChild(dl); dl.click(); dl.remove();
-    toast('Mengunduh ' + gf.name);
-  };
-  return a;
-}
-
 function msgEl(m, isLast){
   const d = document.createElement('div');
   d.className = `msg ${m.role}${isLast?' last':''}${enterIds.delete(m.id)?' enter':''}`; d.dataset.mid = m.id;
@@ -1982,31 +1880,15 @@ function msgEl(m, isLast){
       </div>`;
   } else {
     const p = profile(m.profileId) || profile();
-    const srcBlock = m.sources?.length ? `<details class="src-list"><summary>${icon('globe')}${m.sources.length} sumber web</summary>${m.sources.map((s,i)=>`<a class="src-item" href="${esc(safeUrl(s.url||'#'))}" target="_blank" rel="noopener noreferrer"><span class="n">${i+1}</span><span class="t">${esc(s.title||s.url||'Sumber')}</span><span class="h">${esc(hostOf(s.url||''))}</span></a>`).join('')}</details>` : '';
-    /* Pesan yang menghasilkan file: sembunyikan blok kode mentah, tampilkan kartu file saja */
-    let bodyText = m.text;
-    if(m.genFiles?.length){
-      const stripped = (m.text||'').replace(/```file\s*\r?\n[\s\S]*?(?:```|$)/i,'').trim();
-      bodyText = stripped || `_File ${m.genFiles[0].label} telah dibuat � silakan unduh di bawah._`;
-    }
+    const srcBlock = m.sources?.length ? `<details class="src-list"><summary>${icon('globe')}${m.sources.length} sumber web</summary>${m.sources.map((s,i)=>`<a class="src-item" href="${esc(s.url||'#')}" target="_blank" rel="noopener noreferrer"><span class="n">${i+1}</span><span class="t">${esc(s.title||s.url||'Sumber')}</span><span class="h">${esc(hostOf(s.url||''))}</span></a>`).join('')}</details>` : '';
     d.innerHTML = `<div class="ai-head"><span class="p-emoji" style="background:${p.color}">${esc(p.emoji)}</span><span class="nm">${esc(p.name)}</span><span class="md">${esc(m.model||'')}</span></div>
-      <div class="ai-body"><div class="md-c">${renderMd(bodyText)}</div>${srcBlock}</div>
+      <div class="ai-body"><div class="md-c">${renderMd(m.text)}</div>${srcBlock}</div>
       <div class="msg-actions">
         <button class="icon-btn sm" data-a="copy" title="Salin teks" aria-label="Salin teks">${icon('copy')}</button>
         <button class="icon-btn sm" data-a="regen" title="Buat ulang" aria-label="Buat ulang jawaban">${icon('refresh')}</button>
         <button class="icon-btn sm del" data-a="del" title="Hapus jawaban ini" aria-label="Hapus jawaban">${icon('trash')}</button>
         <span class="stats-row">${tokChips(m)}</span>
       </div>`;
-    // Kartu file hasil tool (mis. PNG hasil upscale)
-    if(m.toolFiles?.length){
-      const wrap = d.querySelector('.ai-body');
-      m.toolFiles.forEach(tf=>wrap.appendChild(toolFileCard(tf)));
-    }
-    // Kartu file dokumen hasil mode file (PPT/DOC/XLS/dll.)
-    if(m.genFiles?.length){
-      const wrap = d.querySelector('.ai-body');
-      m.genFiles.forEach(gf=>wrap.appendChild(genFileCard(gf)));
-    }
     enhance(d.querySelector('.md-c'));
   }
   return d;
@@ -2155,185 +2037,6 @@ function compressImage(src, max=1280){
   });
 }
 
-/* ================= Tool Calling (100% di browser, tanpa server) =================
-   Frontend berperan sebagai tool runtime: ia mengirim daftar tool ke API model
-   (parameter `tools` format OpenAI), lalu jika model membalas tool_call, browser
-   mengeksekusinya LANGSUNG di perangkat (Canvas API) dan mengirim hasilnya
-   kembali sebagai pesan role "tool" sampai model memberi jawaban akhir.
-   Tidak butuh Python/server � bekerja di laptop maupun HP.
-
-   Untuk menambah tool baru (compress, crop, hapus background):
-     1. Tambahkan skemanya di toolSchemas().
-     2. Tambahkan handler-nya di TOOL_HANDLERS (async (args)=>hasil).
-     3. Kembalikan {ok:true, result:{filename, dataUrl, width, height, ...}}. */
-const MAX_TOOL_INPUT_PIXELS = 4096*4096;   // 16 MP � batas gambar masukan
-const MAX_TOOL_OUTPUT_PIXELS = 4096*4096;  // 16 MP � batas hasil (aman untuk RAM HP)
-
-/* Definisi tool yang dikirim ke model */
-function toolSchemas(){
-  return [{
-    type:'function',
-    function:{
-      name:'upscale_image',
-      description:'Perbesar (upscale) gambar yang diunggah pengguna ke resolusi lebih tinggi dan hasilkan file PNG yang bisa diunduh. Gunakan tool ini setiap kali pengguna meminta memperbesar/menajamkan/menaikkan resolusi gambar.',
-      parameters:{
-        type:'object',
-        properties:{
-          image_id:{type:'string', description:'ID gambar yang diunggah pengguna (terlampir di pesan).'},
-          scale:{type:'integer', enum:[2,4], description:'Faktor perbesaran. Maksimum 4.'},
-          method:{type:'string', enum:['lanczos','ai'], description:"Metode upscale: 'lanczos' (cepat, kualitas baik) atau 'ai' (lebih tajam, lebih lambat)."}
-        },
-        required:['image_id'],
-        additionalProperties:false
-      }
-    }
-  }];
-}
-
-/* Registry gambar: image_id -> dataURL (hanya di memori sesi ini) */
-const toolImageStore = new Map();
-
-/* Daftarkan gambar lampiran, kembalikan metadata ber-ID unik */
-async function registerToolImage(src, idx){
-  const dim = await new Promise((res, rej)=>{
-    const img = new Image();
-    img.onload = ()=>res({w:img.naturalWidth, h:img.naturalHeight});
-    img.onerror = ()=>rej(new Error(`Gambar ${idx+1} tidak bisa dibaca.`));
-    img.src = src;
-  });
-  if(dim.w*dim.h > MAX_TOOL_INPUT_PIXELS)
-    throw new Error(`Gambar ${idx+1} terlalu besar (${dim.w}�${dim.h}px, maks 16 MP).`);
-  const image_id = uid().replace(/[^a-z0-9]/gi,'').toLowerCase().padEnd(32,'0').slice(0,32);
-  toolImageStore.set(image_id, src);
-  return {image_id, width:dim.w, height:dim.h, size:Math.round(src.length*0.75), name:'Gambar '+(idx+1)};
-}
-
-/* --- Upscale Lanczos-like di Canvas + unsharp mask ringan --- */
-function loadToolImage(src){ return new Promise((res, rej)=>{ const img = new Image(); img.onload=()=>res(img); img.onerror=()=>rej(new Error('Gagal memuat gambar.')); img.src = src; }); }
-
-async function upscaleCanvas(src, scale, method){
-  const img = await loadToolImage(src);
-  const w = img.naturalWidth, h = img.naturalHeight;
-  const W = w*scale, H = h*scale;
-  if(W*H > MAX_TOOL_OUTPUT_PIXELS)
-    throw new Error(`Hasil ${scale}� akan menjadi ${W}�${H}px (melebihi batas aman perangkat). Gunakan skala lebih kecil.`);
-  // Resize bertahap maks 2x per langkah, smoothing kualitas tinggi � Lanczos
-  let cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-  let ctx = cv.getContext('2d');
-  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0);
-  let cur = scale;
-  while(cur > 1){
-    const step = Math.min(2, cur);
-    const tmp = document.createElement('canvas');
-    tmp.width = cv.width*step; tmp.height = cv.height*step;
-    const tctx = tmp.getContext('2d');
-    tctx.imageSmoothingEnabled = true; tctx.imageSmoothingQuality = 'high';
-    tctx.drawImage(cv, 0, 0, tmp.width, tmp.height);
-    cv = tmp; cur /= step;
-  }
-  // Unsharp mask ringan: hasil = asli + amount � (asli - blur)
-  const amount = method==='ai' ? 0.9 : 0.55;
-  ctx = cv.getContext('2d');
-  const blurCv = document.createElement('canvas');
-  blurCv.width = cv.width; blurCv.height = cv.height;
-  const bctx = blurCv.getContext('2d');
-  bctx.filter = 'blur(1.1px)';
-  bctx.drawImage(cv, 0, 0);
-  const base = ctx.getImageData(0, 0, cv.width, cv.height);
-  const blur = bctx.getImageData(0, 0, cv.width, cv.height);
-  const bd = base.data, ud = blur.data;
-  for(let i=0;i<bd.length;i+=4){
-    for(let c=0;c<3;c++){
-      const d = Math.max(-40, Math.min(40, (bd[i+c]-ud[i+c])*amount));
-      bd[i+c] = Math.max(0, Math.min(255, bd[i+c]+d));
-    }
-  }
-  ctx.putImageData(base, 0, 0);
-  return {canvas:cv, width:W, height:H};
-}
-
-/* --- Handler tool: nama -> fungsi --- */
-const TOOL_HANDLERS = {
-  async upscale_image(args){
-    const image_id = String(args.image_id||'').trim();
-    const scale = parseInt(args.scale)||2;
-    const method = String(args.method||'lanczos').toLowerCase();
-    if(!toolImageStore.has(image_id)) throw new Error('Gambar tidak ditemukan (ID tidak valid atau sesi sudah berganti). Minta pengguna mengunggah ulang.');
-    if(![2,4].includes(scale)) throw new Error('scale harus 2 atau 4.');
-    if(!['lanczos','ai'].includes(method)) throw new Error("method harus 'lanczos' atau 'ai'.");
-    const src = toolImageStore.get(image_id);
-    const meta = await new Promise(res=>{ const i=new Image(); i.onload=()=>res({w:i.naturalWidth,h:i.naturalHeight}); i.src=src; });
-    const out = await upscaleCanvas(src, scale, method);
-    const dataUrl = out.canvas.toDataURL('image/png');
-    const file_id = uid().replace(/[^a-z0-9]/gi,'').toLowerCase();
-    return {
-      ok:true, tool:'upscale_image',
-      result:{
-        file_id, filename:`upscaled-${scale}x-${file_id.slice(0,8)}.png`,
-        dataUrl, mime:'image/png', size_bytes:Math.round(dataUrl.length*0.75),
-        source:{width:meta.w, height:meta.h},
-        width:out.width, height:out.height, scale, method
-      }
-    };
-  }
-};
-
-/* Eksekusi satu tool call secara lokal, kembalikan objek hasil untuk role "tool" */
-async function execToolCall(tc){
-  const name = tc.function?.name || '';
-  let args = {};
-  try{ args = JSON.parse(tc.function?.arguments || '{}'); }
-  catch{ return {ok:false, error:'Argumen tool tidak valid (JSON rusak).'}; }
-  const handler = TOOL_HANDLERS[name];
-  if(!handler) return {ok:false, error:`Tool "${name}" tidak dikenal.`};
-  try{ return await handler(args); }
-  catch(e){ return {ok:false, error:e.message||'Tool gagal dijalankan.'}; }
-}
-
-/* Versi ringkas hasil tool untuk dikirim ke model (tanpa dataURL � hemat token) */
-function slimToolResult(out){
-  return JSON.parse(JSON.stringify(out, (k,v)=>k==='dataUrl'?'[file tersedia di perangkat pengguna]':v));
-}
-
-function fmtBytes(n){
-  if(n==null) return '';
-  if(n<1024) return n+' B';
-  if(n<1048576) return (n/1024).toFixed(1).replace(/\.0$/,'')+' KB';
-  return (n/1048576).toFixed(1).replace(/\.0$/,'')+' MB';
-}
-
-/* Baris indikator "Sedang memperbesar gambar�" di dalam gelembung AI */
-function toolStatusEl(text, state='run'){
-  const d = document.createElement('div');
-  d.className = 'tool-run'+(state==='ok'?' ok':state==='err'?' err':'');
-  d.innerHTML = (state==='run'?'<span class="orb"></span>': state==='ok'?icon('check'):icon('x'))
-    + `<span class="tr-t">${esc(text)}</span>`;
-  return d;
-}
-
-/* Kartu file hasil: thumbnail + nama + resolusi/ukuran + tombol Download PNG */
-function toolFileCard(res){
-  const url = safeUrl(res.dataUrl || res.download_url || '', {allowImageData:true});
-  const a = document.createElement('a');
-  a.className = 'tool-file'; a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-  a.innerHTML = `<img class="tf-thumb" src="${esc(url)}" alt="Pratinjau ${esc(res.filename)}" loading="lazy">
-    <span class="tf-info">
-      <span class="tf-name">${esc(res.filename)}</span>
-      <span class="tf-meta">${icon('image')}${res.width}�${res.height}px � ${fmtBytes(res.size_bytes)} � ${res.scale}� ${esc(res.method||'lanczos')}</span>
-    </span>
-    <button class="btn tf-dl" type="button">${icon('download')}PNG</button>`;
-  a.querySelector('.tf-dl').onclick = e=>{
-    e.preventDefault(); e.stopPropagation();
-    const dl = document.createElement('a');
-    dl.href = url; dl.download = res.filename;
-    document.body.appendChild(dl); dl.click(); dl.remove();
-    toast('Mengunduh '+res.filename);
-  };
-  return a;
-}
-
-
 /* ---- File teks/PDF attachment ---- */
 let fileAttachments = [];
 const MAX_FILE_CHARS = 8000;
@@ -2372,7 +2075,7 @@ async function readPdfText(f){
 }
 /* ---- Kamera ---- */
 async function openCamera(){
-  // Di halaman file:// getUserMedia tidak tersedia ? pakai input capture (HP) atau tolak sopan (PC)
+  // Di halaman file:// getUserMedia tidak tersedia â†’ pakai input capture (HP) atau tolak sopan (PC)
   if(location.protocol === 'file:'){
     if(isMobile()) return $('#file-cam').click();
     return toast('Buka aplikasi lewat http(s) atau localhost agar kamera bisa diakses', true);
@@ -2396,7 +2099,7 @@ async function openCamera(){
   }catch(e){
     const name = e?.name || '';
     if(name === 'NotAllowedError' || name === 'SecurityError')
-      return dialog({tone:'warn', icon:'camera', title:'Izin kamera ditolak', html:'Akses kamera diblokir oleh browser.<br><br>Klik ikon <b>gembok/tuner</b> di kolom alamat ? izinkan <b>Kamera</b> ? muat ulang halaman.', confirm:'Mengerti', cancel:false});
+      return dialog({tone:'warn', icon:'camera', title:'Izin kamera ditolak', html:'Akses kamera diblokir oleh browser.<br><br>Klik ikon <b>gembok/tuner</b> di kolom alamat â†’ izinkan <b>Kamera</b> â†’ muat ulang halaman.', confirm:'Mengerti', cancel:false});
     if(name === 'NotFoundError' || name === 'OverconstrainedError' || name === 'DevicesNotFoundError'){
       if(isMobile()) return $('#file-cam').click();
       return dialog({tone:'warn', icon:'camera', title:'Perangkat tidak memiliki kamera', html:'Tidak ditemukan kamera/webcam yang aktif di perangkat ini.', confirm:'Mengerti', cancel:false});
@@ -2509,10 +2212,11 @@ function send(){
   const wasEmpty = !c.messages.length;
   let shownText = text;
   if(fileAttachments.length){
-    shownText += fileAttachments.map(f=>`\n\n?? **${f.name}**\n\`\`\`\n${f.content.slice(0,1200)}${f.content.length>1200?'\n�(dipotong)':''}\n\`\`\``).join('');
+    shownText += fileAttachments.map(f=>`\n\nðŸ“„ **${f.name}**\n\`\`\`\n${f.content.slice(0,1200)}${f.content.length>1200?'\nâ€¦(dipotong)':''}\n\`\`\``).join('');
   }
   if(ft){
-    c.fileMode = {k: ft.k, ext: ft.k, label: ft.label, mime: ft.mime};
+    shownText = `${shownText}\n\nðŸ“Ž _Mode file: ${ft.label} â€” file akan diunduh otomatis setelah jawaban selesai._`;
+    c.fileMode = {ext: ft.k, label: ft.label};
   }
   const um = {id:uid(), role:'user', text: shownText, images:[...attachments], files:[...fileAttachments], time:Date.now()}; enterIds.add(um.id);
   c.messages.push(um);
@@ -2528,10 +2232,10 @@ function buildMessages(c, opts){
   let sys = p.systemPrompt?.trim() || '';
   if(opts?.fileType){
     const ft = opts.fileType;
-    sys += `\n\nTugas khusus: Tulis konten lengkap untuk sebuah file ${ft.label}. Bungkus SELURUH isi file dalam satu blok kode \`\`\`file ... \`\`\`. Untuk PowerPoint tulis per slide diawali heading (# Judul Slide) diikuti poin-poin "- ". Untuk Excel tulis tabel Markdown. JANGAN tulis apa pun di luar blok kode � tanpa pembuka, penjelasan, atau penutup. Balasanmu hanya boleh berisi blok kode itu saja.`;
+    sys += `\n\nTugas khusus: Tulis konten lengkap untuk sebuah file ${ft.label}. Bungkus SELURUH isi file dalam satu blok kode \`\`\`file ... \`\`\`. Untuk PowerPoint tulis per slide diawali heading (# Judul Slide) diikuti poin-poin "- ". Untuk Excel tulis tabel Markdown. Jangan tambahkan penjelasan lain di luar blok kode.`;
   }
   if(state.settings.memory && (state.memory||[]).length){
-    sys += `\n\nMemori tentang pengguna (fakta yang kamu simpan dari percakapan sebelumnya):\n` + state.memory.map((m,i)=>`${i+1}. ${m}`).join('\n') + `\nGunakan memori ini bila relevan. Jika pengguna memintamu mengingat sesuatu, jawab singkat bahwa kamu akan mengingatnya � aplikasi akan menyimpannya otomatis.`;
+    sys += `\n\nMemori tentang pengguna (fakta yang kamu simpan dari percakapan sebelumnya):\n` + state.memory.map((m,i)=>`${i+1}. ${m}`).join('\n') + `\nGunakan memori ini bila relevan. Jika pengguna memintamu mengingat sesuatu, jawab singkat bahwa kamu akan mengingatnya â€” aplikasi akan menyimpannya otomatis.`;
   }
   if(opts?.webCtx){
     sys += `\n\nHasil penelusuran web terkini (gunakan untuk memperkaya jawaban; sebutkan sumbernya dalam bentuk [nomor] bila memakai faktanya; jangan menyalin mentah-mentah):\n${opts.webCtx}`;
@@ -2539,13 +2243,7 @@ function buildMessages(c, opts){
   if(sys) out.push({role:'system', content: sys});
   c.messages.forEach(m=>{
     if(m.role==='user' && m.images?.length){
-      let txt = m.text || 'Jelaskan gambar ini.';
-      // Beri tahu model ID gambar yang bisa dipakai lewat tool upscale
-      if(m.toolImages?.length){
-        txt += '\n\n[Gambar terlampir � gunakan image_id ini bila memanggil tool upscale_image:\n'
-          + m.toolImages.map((t,i)=>`- ${t.name||('Gambar '+(i+1))}: image_id="${t.image_id}" (${t.width}�${t.height}px)`).join('\n') + ']';
-      }
-      out.push({role:'user', content:[{type:'text', text:txt}, ...m.images.map(u=>({type:'image_url', image_url:{url:u}}))]});
+      out.push({role:'user', content:[{type:'text', text:m.text||'Jelaskan gambar ini.'}, ...m.images.map(u=>({type:'image_url', image_url:{url:u}}))]});
     } else out.push({role:m.role, content: m.text || ((m.imagesOmitted||m.imagesRemoved) ? '(gambar tidak tersedia)' : '')});
   });
   return out;
@@ -2592,7 +2290,7 @@ async function ddgSearch(query){
     return out;
   }catch{ return []; }
 }
-/* SearXNG publik � kebanyakan instance menonaktifkan JSON; tetap dicoba sebagai bonus */
+/* SearXNG publik â€” kebanyakan instance menonaktifkan JSON; tetap dicoba sebagai bonus */
 const SEARX_INSTANCES = ['https://priv.au','https://search.inetol.net'];
 async function searxSearch(query){
   for(const base of SEARX_INSTANCES){
@@ -2604,7 +2302,7 @@ async function searxSearch(query){
   }
   return [];
 }
-/* Google News RSS � gratis, tanpa key, bagus untuk topik terkini */
+/* Google News RSS â€” gratis, tanpa key, bagus untuk topik terkini */
 async function newsSearch(query){
   try{
     const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 7000);
@@ -2716,118 +2414,36 @@ async function generate(opts){
   $$('.msg.last', msgsEl).forEach(x=>x.classList.remove('last'));
   const holder = document.createElement('div'); holder.className='msg assistant last enter';
   holder.innerHTML = `<div class="ai-head"><span class="p-emoji" style="background:${p.color}">${esc(p.emoji)}</span><span class="nm">${esc(p.name)}</span><span class="md">${esc(model)}</span></div>
-    <div class="ai-body"><div class="md-c"><div class="thinking"><span class="orb"></span>Sedang berpikir�</div></div></div>`;
+    <div class="ai-body"><div class="md-c"><div class="thinking"><span class="orb"></span>Sedang berpikirâ€¦</div></div></div>`;
   msgsEl.appendChild(holder); scrollDown();
   const body = holder.querySelector('.md-c');
   let webCtx = null, webResults = null;
   if(state.settings.webSearch){
-    body.innerHTML = `<div class="thinking"><span class="orb"></span>Menelusuri web�</div>`;
+    body.innerHTML = `<div class="thinking"><span class="orb"></span>Menelusuri webâ€¦</div>`;
     const q = await makeSearchQuery(c, conn);
     if(q){
       const sr = await webSearch(q);
       if(sr){ webCtx = sr.ctx; webResults = sr.results; }
     }
-    body.innerHTML = `<div class="thinking"><span class="orb"></span>${webCtx?'Mengolah hasil web�':'Sedang berpikir�'}</div>`;
-  }
-  /* ---- Persiapan tool calling: daftarkan gambar terbaru ke runtime lokal ---- */
-  const lastUser = [...c.messages].reverse().find(m=>m.role==='user');
-  let toolsEnabled = false, toolsNote = '';
-  if(lastUser?.images?.length && !lastUser.toolImages && !fileMode){
-    body.innerHTML = `<div class="thinking"><span class="orb"></span>Menyiapkan gambar�</div>`;
-    try{
-      const ups = [];
-      for(let i=0;i<lastUser.images.length;i++){
-        ups.push(await registerToolImage(lastUser.images[i], i));
-      }
-      lastUser.toolImages = ups; save();
-      toolsEnabled = true;
-    }catch(e){
-      body.innerHTML = `<div class="err"><strong>Gagal menyiapkan gambar.</strong> ${esc(e.message)}<br><button class="btn" id="retry">${icon('refresh')}Coba lagi</button></div>`;
-      generating=false; updateSend();
-      holder.querySelector('#retry').onclick = ()=>{ holder.remove(); generate(opts); };
-      scrollDown(); return;
-    }
-  } else if(lastUser?.toolImages?.length){
-    // Gambar dari pesan sebelumnya: pastikan masih ada di registry sesi ini
-    let allThere = true;
-    for(const t of lastUser.toolImages){ if(!toolImageStore.has(t.image_id)){ allThere = false; break; } }
-    if(!allThere && lastUser.images?.length){
-      try{
-        const ups = [];
-        for(let i=0;i<lastUser.images.length;i++) ups.push(await registerToolImage(lastUser.images[i], i));
-        lastUser.toolImages = ups; save();
-        toolsEnabled = true;
-      }catch(e){ /* lanjut tanpa tool */ }
-    } else toolsEnabled = allThere;
+    body.innerHTML = `<div class="thinking"><span class="orb"></span>${webCtx?'Mengolah hasil webâ€¦':'Sedang berpikirâ€¦'}</div>`;
   }
   const messages = buildMessages(c, {fileType: fileMode, webCtx});
   const s = state.settings;
   const payload = {model, messages, temperature: parseFloat(s.temperature)||0.7};
   if(s.maxTokens) payload.max_tokens = parseInt(s.maxTokens);
-  // Tool calling memakai mode non-streaming per langkah agar tool_call utuh terbaca
-  const useTools = toolsEnabled;
-  if(useTools){ payload.tools = toolSchemas(); payload.tool_choice = 'auto'; }
-  if(s.stream && !useTools){ payload.stream = true; if(s.accurateUsage!==false && !noStreamOpts.has(conn.url)) payload.stream_options = {include_usage:true}; }
+  if(s.stream){ payload.stream = true; if(s.accurateUsage!==false && !noStreamOpts.has(conn.url)) payload.stream_options = {include_usage:true}; }
   controller = new AbortController();
   const t0 = performance.now(); let text = '', usage = null, aborted = false, tFirst = null, chunks = 0;
   const estIn = estTokens(JSON.stringify(messages).replace(/data:image[^"]+/g,''));
-  const toolRuns = [];      // log tool untuk disimpan di pesan
-  const toolFiles = [];     // file hasil untuk kartu download
   try{
     const doFetch = () => fetch(conn.url+'/chat/completions', {
       method:'POST', signal:controller.signal,
       headers:{'Content-Type':'application/json', ...(conn.key?{'Authorization':'Bearer '+conn.key}:{})},
       body:JSON.stringify(payload)
     });
-    /* ---- Tool-calling loop (non-streaming): ulangi sampai jawaban akhir ---- */
-    if(useTools){
-      body.innerHTML = `<div class="thinking"><span class="orb"></span>Sedang berpikir�</div>`;
-      let step = 0; const MAX_STEPS = 5;
-      while(step < MAX_STEPS){
-        step++;
-        let res = await doFetch();
-        if(!res.ok){
-          let msg = `HTTP ${res.status}`; let j = null;
-          try{ j = await res.json(); msg = j.error?.message || j.message || msg; }catch{}
-          // Deteksi provider/model yang tidak mendukung function calling
-          if(step===1 && res.status===400 && /tool|function/i.test(msg)){
-            toolsNote = 'Model/provider ini tampaknya tidak mendukung function calling, jadi fitur upscale via tool dinonaktifkan untuk giliran ini.';
-            delete payload.tools; delete payload.tool_choice;
-            res = await doFetch();
-            if(!res.ok){ let m2 = `HTTP ${res.status}`; try{ const j2 = await res.json(); m2 = j2.error?.message || j2.message || m2; }catch{} throw new Error(m2); }
-          } else throw new Error(msg);
-        }
-        const j = await res.json();
-        if(j.usage) usage = usage ? {
-          prompt_tokens:(usage.prompt_tokens||0)+(j.usage.prompt_tokens||0),
-          completion_tokens:(usage.completion_tokens||0)+(j.usage.completion_tokens||0),
-          total_tokens:(usage.total_tokens||0)+(j.usage.total_tokens||0)
-        } : j.usage;
-        const msgObj = j.choices?.[0]?.message || {};
-        const calls = msgObj.tool_calls || [];
-        if(!calls.length){ text = msgObj.content || ''; break; }  // jawaban akhir
-        // Simpan pesan asisten (dengan tool_calls) lalu eksekusi tiap tool
-        payload.messages.push({role:'assistant', content:msgObj.content ?? null, tool_calls:calls});
-        for(const tc of calls){
-          const st = toolStatusEl('Sedang memperbesar gambar�'); body.appendChild(st); scrollDown();
-          const out = await execToolCall(tc);
-          payload.messages.push({role:'tool', tool_call_id:tc.id, content:JSON.stringify(out.ok ? slimToolResult(out) : out)});
-          if(out.ok && out.result){
-            st.replaceWith(toolStatusEl(`Gambar diperbesar ${out.result.scale}� ? ${out.result.width}�${out.result.height}px`, 'ok'));
-            toolRuns.push({name:'upscale_image', ok:true});
-            toolFiles.push({...out.result});
-          } else {
-            st.replaceWith(toolStatusEl(out.error || 'Tool gagal dijalankan', 'err'));
-            toolRuns.push({name:'upscale_image', ok:false, error:out.error});
-          }
-          scrollDown();
-        }
-      }
-      if(!text && step>=MAX_STEPS) text = 'Maaf, proses tool berhenti karena terlalu banyak langkah.';
-    } else {
     let res = await doFetch();
     if(!res.ok && payload.stream_options && [400,422].includes(res.status)){
-      // penyedia tidak mendukung stream_options ? ulangi tanpa itu
+      // penyedia tidak mendukung stream_options â†’ ulangi tanpa itu
       noStreamOpts.add(conn.url); delete payload.stream_options; res = await doFetch();
     }
     if(!res.ok){
@@ -2842,7 +2458,7 @@ async function generate(opts){
         pending=false; body.innerHTML = renderMd(text)+'<span class="cursor"></span>'; enhance(body,false);
         const outNow = Math.max(chunks, estTokens(text)); const dt = (performance.now()-tFirst)/1000;
         const tpsNow = dt>0.15 ? outNow/dt : 0;
-        live.innerHTML = `<span class="tk in est">${icon('tokIn')}�${fmt(estIn)} in</span><span class="tk out est">${icon('tokOut')}�${fmt(outNow)} out</span><span class="tk tps">${icon('bolt')}<b>${tpsNow?fmtDec(tpsNow):'�'}</b> tok/dtk</span><span class="tk">${icon('clock')}${fmtDec((tFirst-t0)/1000,2)} dtk TTFT</span>`;
+        live.innerHTML = `<span class="tk in est">${icon('tokIn')}â‰ˆ${fmt(estIn)} in</span><span class="tk out est">${icon('tokOut')}â‰ˆ${fmt(outNow)} out</span><span class="tk tps">${icon('bolt')}<b>${tpsNow?fmtDec(tpsNow):'â€¦'}</b> tok/dtk</span><span class="tk">${icon('clock')}${fmtDec((tFirst-t0)/1000,2)} dtk TTFT</span>`;
         if(!live.isConnected) holder.querySelector('.ai-body').appendChild(live);
         scrollDown();
       };
@@ -2859,13 +2475,12 @@ async function generate(opts){
     } else {
       const j = await res.json(); text = j.choices?.[0]?.message?.content || ''; usage = j.usage || null;
     }
-    } /* akhir else non-tool */
   }catch(err){
     if(err.name==='AbortError'){ aborted = true; }
     else {
       generating=false; controller=null; updateSend();
       body.innerHTML = `<div class="err"><strong>Gagal mendapat jawaban.</strong> ${esc(err.message)}${/Failed to fetch|Load failed|NetworkError/i.test(err.message)?(location.protocol==='https:'&&conn.url.startsWith('http:')?'<br>Halaman ini memakai HTTPS, jadi browser memblokir server HTTP. Gunakan Base URL berawalan https://.':(!navigator.onLine?'<br>Perangkat sedang offline.':'<br>Periksa Base URL, koneksi internet, atau kebijakan CORS penyedia API.')):''}<br><button class="btn" id="retry">${icon('refresh')}Coba lagi</button></div>`;
-      holder.querySelector('#retry').onclick = ()=>{ holder.remove(); generate(opts); };
+      holder.querySelector('#retry').onclick = ()=>{ holder.remove(); generate(); };
       scrollDown(); return;
     }
   }
@@ -2879,40 +2494,12 @@ async function generate(opts){
   const ttft = tFirst!==null ? Math.round(tFirst - t0) : null;
   // TPS: streaming = token keluaran / waktu generasi (setelah token pertama); non-streaming = token / total waktu
   const tps = outTok>0 ? outTok / (Math.max(genMs > 120 ? genMs : ms, 1)/1000) : 0;
-  const m = {id:uid(), role:'assistant', text: text + (aborted?'\n\n*� dihentikan*':'') + (toolsNote?`\n\n*?? ${toolsNote}*`:''), model, profileId:p.id, time:Date.now(), tokens:outTok, inTok, estimated, ms, ttft, tps:Math.round(tps*10)/10, ...(webResults?.length?{sources:webResults}:{}), ...(toolFiles.length?{toolFiles}:{})};
+  const m = {id:uid(), role:'assistant', text: text + (aborted?'\n\n*â€” dihentikan*':''), model, profileId:p.id, time:Date.now(), tokens:outTok, inTok, estimated, ms, ttft, tps:Math.round(tps*10)/10, ...(webResults?.length?{sources:webResults}:{})};
   c.messages.push(m); c.updatedAt = Date.now();
   recordUsage(model, p.id, inTok, outTok, estimated, m.tps, ttft);
   save(); holder.replaceWith(msgEl(m, true)); updateSend(); renderSidebar(); renderChatTok(); scrollDown();
   if(state.settings.autoTitle!==false && !c.titled && !c.renamed && !aborted) autoTitle(c);
-  if(fileMode && !aborted){
-    const ftDef = FILE_TYPES.find(t=>t.k === (fileMode.k || fileMode.ext)) || fileMode;
-    pendingFileType = ftDef;
-    const gf = makeFileFromText(text);
-    delete c.fileMode;
-    if(gf && gf !== 'printed'){
-      /* Hapus blok kode mentah dari teks � yang tersisa hanya kartu file */
-      m.text = (m.text||'').replace(/```file\s*\r?\n[\s\S]*?(?:```|$)/i,'').replace(/```(?:pptx?|docx?|xlsx?|pdf|html|markdown|md|txt|csv)\s*\r?\n[\s\S]*?(?:```|$)/i,'').trim()
-        || `_File ${gf.label} telah dibuat � silakan unduh di bawah._`;
-      m.genFiles = [gf];
-      /* PPT: buat versi bergambar di latar belakang, lalu tambahkan kartunya */
-      if(gf._sections?.length){
-        (async ()=>{
-          try{
-            const gfv = await pptWithImages(gf);
-            if(gfv && c.messages.some(x=>x.id===m.id)){
-              const msg = c.messages.find(x=>x.id===m.id);
-              msg.genFiles = [gfv]; save();
-              if(currentView==='chat' && chat()?.id===c.id) renderChat();
-              toast('Versi PPT bergambar siap diunduh');
-            }
-          }catch(e){ console.warn('ppt-images', e); }
-        })();
-      }
-      save(); renderChat();
-      toast(`File ${gf.name} siap diunduh`);
-    }
-    save();
-  }
+  if(fileMode && !aborted){ pendingFileType = fileMode; makeFileFromText(text); delete c.fileMode; save(); }
   if(!aborted) extractMemory(c, conn);
 }
 
@@ -2929,10 +2516,9 @@ function typeInto(el, text, speed=30){
   step();
 }
 /* Bungkus konten elemen dengan marquee jika teksnya meluap.
-   Geser kanan?kiri, berhenti di ujung, lalu kembali dan ulang (dengan jeda). */
+   Geser kananâ†’kiri, berhenti di ujung, lalu kembali dan ulang (dengan jeda). */
 function marqueeIfOverflow(el, text){
   if(!el) return;
-  if(el.id==='mp-name' || el.id==='mp-model') return; // chip model pakai ellipsis CSS, bukan marquee
   const content = text ?? el.textContent;
   const parentW = el.clientWidth;
   el.textContent = content;
@@ -2963,11 +2549,11 @@ async function autoTitle(c, force=false){
   const p = profile(c.profileId); const conn = connFor(p);
   setTitleLoading(c.id, true);
   try{
-    const ctx = `Pesan pengguna:\n${(first.text||'').replace(/\n*?? _Mode file:.*$/s,'').slice(0,900)}${first.images?.length?`\n[pengguna melampirkan ${first.images.length} gambar]`:''}\n\nCuplikan jawaban asisten:\n${(ans?.text||'').slice(0,700)}`;
+    const ctx = `Pesan pengguna:\n${(first.text||'').slice(0,900)}${first.images?.length?`\n[pengguna melampirkan ${first.images.length} gambar]`:''}\n\nCuplikan jawaban asisten:\n${(ans?.text||'').slice(0,700)}`;
     const res = await fetch(conn.url+'/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json', ...(conn.key?{'Authorization':'Bearer '+conn.key}:{})},
       body:JSON.stringify({model:conn.model, temperature:0.3, max_tokens:40, messages:[
-        {role:'system', content:'Tugasmu hanya membuat judul percakapan. Buat judul 2�6 kata yang spesifik menggambarkan topik/tujuan pengguna, dalam bahasa yang sama dengan pesan pengguna. DILARANG memakai emoji, tanda kutip, titik, atau penjelasan apa pun. Balas HANYA dengan judul teks polos.'},
+        {role:'system', content:'Tugasmu hanya membuat judul percakapan. Buat judul 2â€“6 kata yang spesifik menggambarkan topik/tujuan pengguna, dalam bahasa yang sama dengan pesan pengguna. Boleh diawali satu emoji yang relevan. Jangan pakai tanda kutip, titik, atau penjelasan apa pun. Balas HANYA dengan judulnya.'},
         {role:'user', content:ctx}
       ]})
     });
@@ -3010,28 +2596,11 @@ function renameChat(){
 }
 function closeMenus(except){
   $$('.menu.open').forEach(x=>{ if(x===except || x.classList.contains('closing')) return; x.classList.add('closing');
-    setTimeout(()=>{ x.classList.remove('open','closing'); parkMenu(x); }, isMobile() ? 200 : 160); });
-}
-/* Di mobile, sheet dipindah ke <body> saat dibuka agar lepas dari semua stacking/containing
-   context ancestor (topbar/composer ber-backdrop-filter), lalu dikembalikan saat tertutup. */
-function liftMenu(m){
-  if(!isMobile() || m._lifted) return;
-  m._lifted = {next: m.nextSibling, parent: m.parentElement};
-  const s = $('#sheet-scrim');
-  if(s){ s._lifted = {next: s.nextSibling, parent: s.parentElement}; document.body.appendChild(s); }
-  document.body.appendChild(m);
-}
-function parkMenu(m){
-  if(!m._lifted) return;
-  const {next, parent} = m._lifted; m._lifted = null;
-  next && next.parentElement === parent ? parent.insertBefore(m, next) : parent.appendChild(m);
-  const s = $('#sheet-scrim');
-  if(s && s._lifted){ const sl = s._lifted; s._lifted = null;
-    sl.next && sl.next.parentElement === sl.parent ? sl.parent.insertBefore(s, sl.next) : sl.parent.appendChild(s); }
+    setTimeout(()=>x.classList.remove('open','closing'), isMobile() ? 200 : 160); });
 }
 function toggleMenu(m, btn){
   const open = !m.classList.contains('open') || m.classList.contains('closing'); closeMenus(); if(open) m.classList.remove('closing');
-  if(open){ liftMenu(m); m.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  if(open){ m.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
 }
 document.addEventListener('click', e=>{ if(!e.target.closest('.menu') && !e.target.closest('#btn-more,#profile-switch,#model-pick,#think-pick') && !e.target.closest('#attach-menu') && !e.target.closest('#btn-attach')) closeMenus(); });
 $('#btn-more').onclick = e=>toggleMenu($('#more-menu'), e.currentTarget);
@@ -3047,7 +2616,7 @@ $('#more-menu').onclick = async e=>{
   if(a==='copyall'){ if(await copyText(chatToMd(c))) toast('Seluruh percakapan disalin'); }
 };
 function chatToMd(c){
-  return `# ${c.title}\n\n` + c.messages.map(m=> m.role==='user' ? `**${state.user.name||'Kamu'}:**\n\n${m.text}${m.images?.length?`\n\n_[${m.images.length} gambar]_`:''}` : `**${profile(m.profileId).name}** _(${m.model}${m.tokens!=null?` � ${m.inTok??'?'} in / ${m.tokens} out${m.tps?` � ${m.tps} tok/dtk`:''}`:''})_:\n\n${m.text}`).join('\n\n---\n\n');
+  return `# ${c.title}\n\n` + c.messages.map(m=> m.role==='user' ? `**${state.user.name||'Kamu'}:**\n\n${m.text}${m.images?.length?`\n\n_[${m.images.length} gambar]_`:''}` : `**${profile(m.profileId).name}** _(${m.model}${m.tokens!=null?` Â· ${m.inTok??'?'} in / ${m.tokens} out${m.tps?` Â· ${m.tps} tok/dtk`:''}`:''})_:\n\n${m.text}`).join('\n\n---\n\n');
 }
 function download(name, content, type){
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content],{type})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
@@ -3075,23 +2644,12 @@ function renderFileChip(){
   chip.querySelector('.fx').onclick = ()=>{ pendingFileType = null; renderFileChip(); };
   c.insertBefore(chip, c.querySelector('.c-row'));
 }
-/* Hapus baris info mode file dari pesan lama (legacy) */
-function stripFileModeNote(c){
-  let dirty = false;
-  (c.messages||[]).forEach(m=>{
-    if(m.role==='user' && m.text && m.text.includes('_Mode file:')){
-      const t = m.text.replace(/\n*??\s*_Mode file:[^_]*_\s*$/s,'').trimEnd();
-      if(t !== m.text){ m.text = t; dirty = true; }
-    }
-  });
-  return dirty;
-}
 $('#btn-file-tool').onclick = async ()=>{
   const pick = await dialog({
     tone:'info', icon:'filePlus', title:'Buat file dari jawaban AI',
-    html:'Pilih format file. Setelah itu, tulis konten yang diinginkan di kolom pesan lalu kirim � file akan <b>terunduh otomatis</b> setelah AI selesai menulis.',
+    html:'Pilih format file. Setelah itu, tulis konten yang diinginkan di kolom pesan lalu kirim â€” file akan <b>terunduh otomatis</b> setelah AI selesai menulis.',
     confirm:'Pakai format ini', cancel:'Batal',
-    options: FILE_TYPES.map((t,i)=>({value:t.k, label:t.label, desc:{ppt:'Slide presentasi, tiap heading jadi 1 slide',doc:'Dokumen teks yang bisa dibuka di Microsoft Word',xls:'Tabel spreadsheet (dari tabel Markdown)',pdf:'Lewat dialog print browser ? Save as PDF',html:'Halaman web siap buka di browser',md:'Catatan Markdown',txt:'Teks polos',csv:'Data dipisah koma untuk Excel'}[t.k], selected:i===0}))
+    options: FILE_TYPES.map((t,i)=>({value:t.k, label:t.label, desc:{ppt:'Slide presentasi, tiap heading jadi 1 slide',doc:'Dokumen teks yang bisa dibuka di Microsoft Word',xls:'Tabel spreadsheet (dari tabel Markdown)',pdf:'Lewat dialog print browser â†’ Save as PDF',html:'Halaman web siap buka di browser',md:'Catatan Markdown',txt:'Teks polos',csv:'Data dipisah koma untuk Excel'}[t.k], selected:i===0}))
   });
   if(!pick) return;
   pendingFileType = FILE_TYPES.find(t=>t.k===pick);
@@ -3109,40 +2667,12 @@ function mdToHtmlLite(md){
     if(inPre){ out.push(ftEsc(ln)); continue; }
     const h = ln.match(/^(#{1,3})\s+(.*)/);
     if(h){ if(inUl){out.push('</ul>');inUl=false;} out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
-    if(/^\s*[-*�]\s+/.test(ln)){ if(!inUl){out.push('<ul>');inUl=true;} out.push(`<li>${inline(ln.replace(/^\s*[-*�]\s+/,''))}</li>`); continue; }
+    if(/^\s*[-*â€¢]\s+/.test(ln)){ if(!inUl){out.push('<ul>');inUl=true;} out.push(`<li>${inline(ln.replace(/^\s*[-*â€¢]\s+/,''))}</li>`); continue; }
     if(inUl){out.push('</ul>');inUl=false;}
     if(ln.trim()) out.push(`<p>${inline(ln)}</p>`);
   }
   if(inUl) out.push('</ul>'); if(inPre) out.push('</code></pre>');
   return out.join('\n');
-}
-function parseSlides(md, title){
-  const sections = []; let cur = null;
-  md.split(/\r?\n/).forEach(ln=>{
-    const h = ln.match(/^#{1,3}\s+(.*)/);
-    if(h){ if(cur) sections.push(cur); cur = {title: h[2].replace(/\*\*/g,''), bullets: []}; }
-    else if(/^\s*[-*�]\s+/.test(ln) && cur) cur.bullets.push(ln.replace(/^\s*[-*�]\s+/,'').replace(/\*\*/g,''));
-    else if(ln.trim() && cur) cur.bullets.push(ln.trim().replace(/\*\*/g,''));
-    else if(ln.trim()) cur = {title: ln.trim().replace(/\*\*/g,''), bullets: []};
-  });
-  if(cur) sections.push(cur);
-  if(!sections.length) sections.push({title, bullets: md.split(/\r?\n/).filter(Boolean).slice(0,8)});
-  return sections;
-}
-function buildPptHtml(title, sections, imgs){
-  const slides = sections.map((s,i)=>`<div class="slide"><h1>${i+1}. ${ftEsc(s.title)}</h1><ul>${s.bullets.map(b=>`<li>${ftEsc(b)}</li>`).join('')}</ul>${imgs?.[i]?`<img src="${imgs[i]}" style="max-width:560px;max-height:280px;margin-top:12px;border-radius:8px" alt="">`:''}</div>`).join('');
-  return `<html xmlns:p="urn:schemas-microsoft-com:office:powerpoint" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${ftEsc(title)}</title><style>body{font-family:Calibri,Arial}.slide{width:960px;height:540px;padding:48px;page-break-after:always;border:1px solid #ccc;margin:16px auto}h1{font-size:34px;color:#4C1D95}li{font-size:22px;margin:8px 0}</style></head><body>${slides}</body></html>`;
-}
-/* Ambil gambar ilustrasi gratis (Pollinations.ai, tanpa API key) sebagai data URI agar tertanam di file */
-async function fetchSlideImage(prompt){
-  try{
-    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent('illustration of '+prompt)}?width=800&height=450&nologo=true`;
-    const r = await fetch(url);
-    if(!r.ok) return null;
-    const blob = await r.blob();
-    if(!blob.type.startsWith('image/')) return null;
-    return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(blob); });
-  }catch{ return null; }
 }
 function buildFileContent(t, title, md){
   switch(t.k){
@@ -3159,8 +2689,18 @@ function buildFileContent(t, title, md){
       return {data: `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>${tbl}</body></html>`, mime: t.mime};
     }
     case 'ppt': {
-      const sections = parseSlides(md, title);
-      return {data: buildPptHtml(title, sections), mime: t.mime, _sections: sections};
+      const sections = []; let cur = null;
+      md.split(/\r?\n/).forEach(ln=>{
+        const h = ln.match(/^#{1,3}\s+(.*)/);
+        if(h){ if(cur) sections.push(cur); cur = {title: h[2].replace(/\*\*/g,''), bullets: []}; }
+        else if(/^\s*[-*â€¢]\s+/.test(ln) && cur) cur.bullets.push(ln.replace(/^\s*[-*â€¢]\s+/,'').replace(/\*\*/g,''));
+        else if(ln.trim() && cur) cur.bullets.push(ln.trim().replace(/\*\*/g,''));
+        else if(ln.trim()) cur = {title: ln.trim().replace(/\*\*/g,''), bullets: []};
+      });
+      if(cur) sections.push(cur);
+      if(!sections.length) sections.push({title, bullets: md.split(/\r?\n/).filter(Boolean).slice(0,8)});
+      const slides = sections.map((s,i)=>`<div class="slide"><h1>${i+1}. ${ftEsc(s.title)}</h1><ul>${s.bullets.map(b=>`<li>${ftEsc(b)}</li>`).join('')}</ul></div>`).join('');
+      return {data: `<html xmlns:p="urn:schemas-microsoft-com:office:powerpoint" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${ftEsc(title)}</title><style>body{font-family:Calibri,Arial}.slide{width:960px;height:540px;padding:48px;page-break-after:always;border:1px solid #ccc;margin:16px auto}h1{font-size:34px;color:#4C1D95}li{font-size:22px;margin:8px 0}</style></head><body>${slides}</body></html>`, mime: t.mime};
     }
     case 'pdf': {
       const w = window.open('', '_blank'); if(!w){ toast('Pop-up diblokir. Izinkan pop-up untuk membuat PDF.', true); return null; }
@@ -3171,53 +2711,23 @@ function buildFileContent(t, title, md){
   }
 }
 function makeFileFromText(raw){
-  const t = pendingFileType; if(!t) return null;
-  try{
-    const m = raw.match(/```file\s*\r?\n([\s\S]*?)(?:```|$)/i) || raw.match(/```(?:pptx?|docx?|xlsx?|pdf|html|markdown|md|txt|csv)\s*\r?\n([\s\S]*?)(?:```|$)/i);
-    const content = (m ? m[1] : raw).trim();
-    if(!content){ toast('Konten file kosong � tidak ada file yang dibuat', true); pendingFileType = null; renderFileChip(); return null; }
-    const title = (content.split(/\r?\n/).find(l=>l.trim()) || 'dokumen').replace(/[#*`\-]/g,'').trim().slice(0,60) || 'dokumen';
-    const built = buildFileContent(t, title, content);
-    pendingFileType = null; renderFileChip();
-    if(!built) return null;
-    if(built === 'printed') return 'printed';
-    const safe = title.replace(/[^\w\- ]+/g,'').trim() || 'dokumen';
-    const gf = {
-      file_id: uid().replace(/[^a-z0-9]/gi,'').toLowerCase(),
-      name: `${safe}.${t.ext}`, label: t.label, ext: t.ext,
-      mime: built.mime || t.mime || 'application/octet-stream',
-      size_bytes: built.data.length,
-      ...(built._sections ? {_sections: built._sections, _title: title} : {})
-    };
-    /* Kecil ? tertanam permanen di chat sebagai dataUrl; besar ? simpan di memori sesi saja */
-    if(built.data.length <= FILE_STORE_LIMIT) gf.dataUrl = 'data:' + gf.mime + ';charset=utf-8,' + encodeURIComponent(built.data);
-    else genFileStore.set(gf.file_id, {name: gf.name, content: built.data, mime: gf.mime});
-    return gf;
-  }catch(e){
-    console.error('file-tool', e);
-    pendingFileType = null; renderFileChip();
-    toast('Gagal membuat file: ' + e.message, true);
-    return null;
-  }
-}
-/* PPT: generate ilustrasi per slide, lalu kembalikan descriptor versi bergambar */
-async function pptWithImages(gf){
-  if(!gf._sections?.length) return null;
-  try{
-    const imgs = await Promise.all(gf._sections.map(s=>fetchSlideImage(s.title)));
-    const n = imgs.filter(Boolean).length;
-    if(!n) return null;
-    const data = buildPptHtml(gf._title || 'dokumen', gf._sections, imgs);
-    return {...gf, size_bytes: data.length,
-      dataUrl: data.length <= FILE_STORE_LIMIT ? 'data:' + gf.mime + ';charset=utf-8,' + encodeURIComponent(data) : undefined};
-  }catch(e){ console.warn('ppt-images', e); return null; }
+  const t = pendingFileType; if(!t) return;
+  const m = raw.match(/```file\s*\n([\s\S]*?)```/) || raw.match(/```(?:pptx?|docx?|xlsx?|pdf|html|markdown|md|txt|csv)\s*\n([\s\S]*?)```/);
+  const content = (m ? m[1] : raw).trim();
+  const title = (content.split(/\r?\n/).find(l=>l.trim()) || 'dokumen').replace(/[#*`\-]/g,'').trim().slice(0,60) || 'dokumen';
+  const built = buildFileContent(t, title, content);
+  pendingFileType = null; renderFileChip();
+  if(!built || built === 'printed') return;
+  const safe = title.replace(/[^\w\- ]+/g,'').trim() || 'dokumen';
+  download(`${safe}.${t.ext}`, built.data, built.mime || 'application/octet-stream');
+  toast(`File ${safe}.${t.ext} diunduh`);
 }
 
 /* profile switcher */
 function profileMenuHTML(){
   return `<div class="menu-head">Pilih profil AI</div>` + state.profiles.map(x=>{ const cn = connFor(x); return `
     <button class="menu-item" data-pid="${x.id}"><span class="p-emoji" style="background:${x.color}">${esc(x.emoji)}</span>
-    <span style="min-width:0;flex:1"><span style="display:block;font-weight:600">${esc(x.name)}</span><span class="mi-model">${esc(cn.model)}</span><span class="d">${esc(hostOf(cn.url))}${x.apiKey?' � key sendiri':''}</span></span>
+    <span style="min-width:0;flex:1"><span style="display:block;font-weight:600">${esc(x.name)}</span><span class="mi-model">${esc(cn.model)}</span><span class="d">${esc(hostOf(cn.url))}${x.apiKey?' Â· key sendiri':''}</span></span>
     ${x.id===state.activeProfileId?`<span class="chk">${icon('check')}</span>`:''}</button>`; }).join('') +
     `<div class="menu-sep"></div><button class="menu-item" data-pid="__new">${icon('plus')}Tambah profil AI</button><button class="menu-item" data-pid="__manage">${icon('sliders')}Kelola profil AI</button>`;
 }
@@ -3226,11 +2736,11 @@ function renderProfileSwitch(){
   $('#ps-emoji').textContent = p.emoji; $('#ps-emoji').style.background = p.color; $('#ps-name').textContent = p.name;
   $('#mp-emoji').textContent = p.emoji; $('#mp-emoji').style.background = p.color; $('#mp-name').textContent = p.name; $('#mp-model').textContent = modelFor(p);
   requestAnimationFrame(()=>{ marqueeIfOverflow($('#mp-name')); marqueeIfOverflow($('#mp-model')); });
-  $('#model-pick').title = `${p.name} � ${modelFor(p)}`;
+  $('#model-pick').title = `${p.name} Â· ${modelFor(p)}`;
   $('#greet-sub').textContent = `Ngobrol dengan ${p.name}.`;
   $('#greet-desc').textContent = p.description || '';
   $('#greet-desc').hidden = !p.description;
-  input.placeholder = `Tulis pesan untuk ${p.name}�`;
+  input.placeholder = `Tulis pesan untuk ${p.name}â€¦`;
   $('#profile-menu').innerHTML = profileMenuHTML();
   $('#model-menu').innerHTML = profileMenuHTML();
   renderThinkMenu();
@@ -3248,7 +2758,7 @@ $('#model-menu').onclick = onProfileMenu;
 function setActiveProfile(id){
   state.activeProfileId = id; const c = chat(); if(c) c.profileId = id; save();
   renderProfileSwitch(); if(currentView==='chat' && !(c && c.messages.length)) renderChat();
-  toast(`Beralih ke ${profile().name} � ${modelFor(profile())}`, 'info');
+  toast(`Beralih ke ${profile().name} Â· ${modelFor(profile())}`, 'info');
 }
 
 /* ================= Search ================= */
@@ -3272,7 +2782,7 @@ function runSearch(){
     const m = c.messages.find(m=>(m.text||'').toLowerCase().includes(ql));
     if(inTitle || m){
       let snippet = '';
-      if(m){ const i = m.text.toLowerCase().indexOf(ql); const st = Math.max(0,i-50); snippet = (st?'�':'')+m.text.slice(st, i+q.length+90).replace(/\s+/g,' '); }
+      if(m){ const i = m.text.toLowerCase().indexOf(ql); const st = Math.max(0,i-50); snippet = (st?'â€¦':'')+m.text.slice(st, i+q.length+90).replace(/\s+/g,' '); }
       else snippet = (c.messages.at(-1)?.text||'').slice(0,140);
       sItems.push({c, m, snippet});
     }
@@ -3281,7 +2791,7 @@ function runSearch(){
   sSel = 0;
   sRes.innerHTML = sItems.length ? sItems.map((it,i)=>`
     <button class="sr-item ${i===0?'sel':''}" data-i="${i}"><div class="t"><div>${hl(it.c.title,q)}</div><span>${relTime(it.c.updatedAt)}</span></div><div class="s">${hl(it.snippet,q)}</div></button>`).join('')
-    : `<div class="sr-empty">${q?`Tidak ada hasil untuk �${esc(q)}�. Coba kata kunci lain.`:'Belum ada percakapan untuk dicari.'}</div>`;
+    : `<div class="sr-empty">${q?`Tidak ada hasil untuk â€œ${esc(q)}â€. Coba kata kunci lain.`:'Belum ada percakapan untuk dicari.'}</div>`;
 }
 sRes.onclick = e=>{ const b=e.target.closest('.sr-item'); if(b) pickSearch(+b.dataset.i); };
 function pickSearch(i){ const it = sItems[i]; if(!it) return; closeSearch(); openChat(it.c.id, it.m?.id); }
@@ -3317,11 +2827,11 @@ function totals(){
 }
 function renderDashboard(){
   $('#dash-greet').textContent = greeting();
-  const T = totals(); const UU = U(); const est = UU.estimated ? '� ' : '';
+  const T = totals(); const UU = U(); const est = UU.estimated ? 'â‰ˆ ' : '';
   const td = UU.daily[today()] || {in:0,out:0,req:0};
   if(currentTab==='overview'){
     const p = profile();
-    $('#ov-profile').innerHTML = `<div class="big" style="background:${p.color}">${esc(p.emoji)}</div><div style="flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted)">Profil AI aktif</div><h3>${esc(p.name)}</h3><p>${esc(p.description||'')} � <span style="font-family:var(--mono);font-size:13px">${esc(modelFor(p))}</span></p></div><button class="btn" id="ov-edit">${icon('edit')}Edit profil</button>`;
+    $('#ov-profile').innerHTML = `<div class="big" style="background:${p.color}">${esc(p.emoji)}</div><div style="flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted)">Profil AI aktif</div><h3>${esc(p.name)}</h3><p>${esc(p.description||'')} Â· <span style="font-family:var(--mono);font-size:13px">${esc(modelFor(p))}</span></p></div><button class="btn" id="ov-edit">${icon('edit')}Edit profil</button>`;
     $('#ov-edit').onclick = ()=>{ editingProfileId = p.id; setTab('profiles'); };
     $('#ov-stats').innerHTML = [
       [fmt(state.chats.length),'Percakapan'],[fmt(T.msgs),'Pesan'],[est+fmtShort(T.inT+T.outT),'Total token',true],[fmt(td.req),'Permintaan hari ini']
@@ -3335,12 +2845,12 @@ function renderDashboard(){
   if(currentTab==='memory') renderMemory();
   if(currentTab==='usage'){
     $('#us-stats').innerHTML = [
-      [est+fmtShort(T.inT),'Token In (masukan)'],[est+fmtShort(T.outT),'Token Out (keluaran)',true],[T.tpsN?fmtDec(T.tpsSum/T.tpsN):'�','Rata-rata TPS (tok/dtk)',true],[T.ttftN?fmtDec(T.ttftSum/T.ttftN/1000,2)+' dtk':'�','Rata-rata TTFT']
+      [est+fmtShort(T.inT),'Token In (masukan)'],[est+fmtShort(T.outT),'Token Out (keluaran)',true],[T.tpsN?fmtDec(T.tpsSum/T.tpsN):'â€“','Rata-rata TPS (tok/dtk)',true],[T.ttftN?fmtDec(T.ttftSum/T.ttftN/1000,2)+' dtk':'â€“','Rata-rata TTFT']
     ].map(([v,l,g])=>`<div class="stat"><div class="v ${g?'g':''}">${v}</div><div class="l">${l}</div></div>`).join('');
     $('#us-chart').innerHTML = chartSVG(30, true);
     const models = Object.entries(UU.models).sort((a,b)=>(b[1].in+b[1].out)-(a[1].in+a[1].out));
     const maxM = Math.max(1,...models.map(([,v])=>v.in+v.out));
-    $('#us-models').innerHTML = models.length ? `<table class="tbl"><thead><tr><th>Model</th><th class="num">Req</th><th class="num">In</th><th class="num">Out</th><th class="num">TPS</th></tr></thead><tbody>${models.map(([k,v])=>`<tr><td><span style="font-family:var(--mono);font-size:13px">${esc(k)}</span><div class="bar-mini"><i style="width:${(v.in+v.out)/maxM*100}%"></i></div></td><td class="num">${fmt(v.req)}</td><td class="num">${fmtShort(v.in)}</td><td class="num">${fmtShort(v.out)}</td><td class="num" title="${v.tpsMax?'Tercepat: '+fmtDec(v.tpsMax)+' tok/dtk':''}">${v.tpsN?fmtDec(v.tpsSum/v.tpsN):'�'}</td></tr>`).join('')}</tbody></table>` : '<p class="sub">Belum ada data. Kirim pesan pertama untuk mulai mencatat.</p>';
+    $('#us-models').innerHTML = models.length ? `<table class="tbl"><thead><tr><th>Model</th><th class="num">Req</th><th class="num">In</th><th class="num">Out</th><th class="num">TPS</th></tr></thead><tbody>${models.map(([k,v])=>`<tr><td><span style="font-family:var(--mono);font-size:13px">${esc(k)}</span><div class="bar-mini"><i style="width:${(v.in+v.out)/maxM*100}%"></i></div></td><td class="num">${fmt(v.req)}</td><td class="num">${fmtShort(v.in)}</td><td class="num">${fmtShort(v.out)}</td><td class="num" title="${v.tpsMax?'Tercepat: '+fmtDec(v.tpsMax)+' tok/dtk':''}">${v.tpsN?fmtDec(v.tpsSum/v.tpsN):'â€“'}</td></tr>`).join('')}</tbody></table>` : '<p class="sub">Belum ada data. Kirim pesan pertama untuk mulai mencatat.</p>';
     const profs = Object.entries(UU.profiles).sort((a,b)=>b[1]-a[1]); const maxP = Math.max(1,...profs.map(x=>x[1]));
     $('#us-profiles').innerHTML = profs.length ? profs.map(([id,n])=>{ const p = state.profiles.find(x=>x.id===id); return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><span class="p-emoji" style="background:${p?.color||'#555'}">${esc(p?.emoji||'?')}</span><div style="flex:1"><div style="display:flex;justify-content:space-between;font-size:14px"><span>${esc(p?.name||'Profil terhapus')}</span><span style="color:var(--muted)">${fmt(n)}</span></div><div class="bar-mini"><i style="width:${n/maxP*100}%"></i></div></div></div>`; }).join('') : '<p class="sub">Belum ada data.</p>';
   }
@@ -3349,7 +2859,7 @@ function renderDashboard(){
     $('#s-url').value = s.apiUrl; $('#s-key').value = s.apiKey; $('#s-model').value = s.model; $('#s-max').value = s.maxTokens;
     $('#s-stream').checked = s.stream; $('#s-enter').checked = s.enterSend; $('#s-autotitle').checked = s.autoTitle!==false; $('#s-usage').checked = s.accurateUsage!==false; $('#s-status').textContent='';
   }
-  if(currentTab==='data'){ $('#u-name').value = state.user.name||''; navigator.storage?.estimate?.().then(e=>{ $('#d-local').textContent = `Penyimpanan perangkat: ${fmtDec((e.usage||0)/1048576,1)} MB terpakai dari �${fmtDec((e.quota||0)/1073741824,1)} GB yang tersedia${useIDB?'':' (mode terbatas localStorage)'}.`; }).catch(()=>{}); }
+  if(currentTab==='data'){ $('#u-name').value = state.user.name||''; navigator.storage?.estimate?.().then(e=>{ $('#d-local').textContent = `Penyimpanan perangkat: ${fmtDec((e.usage||0)/1048576,1)} MB terpakai dari Â±${fmtDec((e.quota||0)/1073741824,1)} GB yang tersedia${useIDB?'':' (mode terbatas localStorage)'}.`; }).catch(()=>{}); }
   if(currentTab==='sync') Sync.render();
 }
 
@@ -3396,10 +2906,10 @@ function renderProfiles(){
         <div class="field"><label for="pf-prov">Penyedia</label><select class="select" id="pf-prov"><option value="">Bawaan (${esc(hostOf(g.apiUrl))})</option>${PROVIDERS.map(([id,n])=>`<option value="${id}" ${id===prov?'selected':''}>${n}</option>`).join('')}</select></div>
         <div class="field"><label for="pf-url">Base URL</label><input class="input" id="pf-url" value="${esc(p.apiUrl||'')}" placeholder="${esc(g.apiUrl)}"></div>
       </div>
-      <div class="field"><label for="pf-key">API key</label><div class="with-btn"><input class="input" id="pf-key" type="password" value="${esc(p.apiKey||'')}" placeholder="${g.apiKey?'Kosongkan = pakai API key bawaan':'sk-�'}" autocomplete="off"><button class="btn" id="pf-eye" aria-label="Tampilkan API key">${icon('eye')}</button></div></div>
+      <div class="field"><label for="pf-key">API key</label><div class="with-btn"><input class="input" id="pf-key" type="password" value="${esc(p.apiKey||'')}" placeholder="${g.apiKey?'Kosongkan = pakai API key bawaan':'sk-â€¦'}" autocomplete="off"><button class="btn" id="pf-eye" aria-label="Tampilkan API key">${icon('eye')}</button></div></div>
       <div class="field"><label for="pf-model">Nama model</label><div class="with-btn"><input class="input" id="pf-model" value="${esc(p.model||'')}" placeholder="${esc(g.model)}" list="pf-models" style="font-family:var(--mono);font-size:13px"><button class="btn" id="pf-fetch">${icon('refresh')}Ambil daftar</button></div><datalist id="pf-models"></datalist><div class="help" id="pf-status">ID model persis seperti di penyedia, misalnya gpt-4o-mini, gemini-2.0-flash, llama-3.3-70b-versatile.</div></div>
     </div>
-    <div class="field"><label for="pf-sys">Instruksi sistem (system prompt)</label><textarea class="textarea" id="pf-sys" placeholder="Contoh: Kamu adalah tutor matematika yang sabar�">${esc(p.systemPrompt||'')}</textarea><div class="help">Dikirim di awal setiap percakapan dengan profil ini.</div></div>
+    <div class="field"><label for="pf-sys">Instruksi sistem (system prompt)</label><textarea class="textarea" id="pf-sys" placeholder="Contoh: Kamu adalah tutor matematika yang sabarâ€¦">${esc(p.systemPrompt||'')}</textarea><div class="help">Dikirim di awal setiap percakapan dengan profil ini.</div></div>
     <div class="btns">
       <button class="btn primary" id="pf-save">${icon('check')}Simpan profil</button>
       ${p.id!==state.activeProfileId?`<button class="btn" id="pf-use">${icon('bolt')}Jadikan aktif</button>`:''}
@@ -3414,14 +2924,14 @@ function renderProfiles(){
   $('#pf-url').oninput = e=>{ $('#pf-prov').value = providerOf(e.target.value); };
   $('#pf-eye').onclick = ()=>{ const k=$('#pf-key'); k.type = k.type==='password'?'text':'password'; };
   $('#pf-fetch').onclick = async ()=>{
-    const st = $('#pf-status'); st.className='help'; st.textContent='Menghubungkan�';
+    const st = $('#pf-status'); st.className='help'; st.textContent='Menghubungkanâ€¦';
     const cn = connFor({apiUrl:$('#pf-url').value, apiKey:$('#pf-key').value, model:$('#pf-model').value});
     try{
       const r = await fetch(cn.url+'/models', {headers: cn.key?{'Authorization':'Bearer '+cn.key}:{}});
       if(!r.ok){ let m='HTTP '+r.status; try{ const j=await r.json(); m=j.error?.message||m; }catch{} throw new Error(m); }
       const j = await r.json(); const ids = (j.data||j.models||[]).map(x=>(x.id||x.name||'').replace(/^models\//,'')).filter(Boolean).sort();
       $('#pf-models').innerHTML = ids.slice(0,400).map(i=>`<option value="${esc(i)}">`).join('');
-      st.className='help'; st.style.color='var(--ok)'; st.textContent = `Terhubung ke ${hostOf(cn.url)} � ${ids.length} model. Ketik di kolom model untuk memilih.`;
+      st.className='help'; st.style.color='var(--ok)'; st.textContent = `Terhubung ke ${hostOf(cn.url)} Â· ${ids.length} model. Ketik di kolom model untuk memilih.`;
       $('#pf-model').focus();
     }catch(e){ st.style.color='var(--danger)'; st.textContent = 'Gagal: '+e.message; }
   };
@@ -3431,7 +2941,7 @@ function renderProfiles(){
     const name = $('#pf-name').value.trim(); if(!name) return toast('Nama profil wajib diisi', true);
     Object.assign(p, {name, description:$('#pf-desc').value.trim(), systemPrompt:$('#pf-sys').value, emoji:draftEmoji, color:draftColor,
       apiUrl:$('#pf-url').value.trim(), apiKey:$('#pf-key').value.trim(), model:$('#pf-model').value.trim()});
-    save(); renderProfiles(); renderProfileSwitch(); toast(`${p.name} disimpan � ${modelFor(p)}`);
+    save(); renderProfiles(); renderProfileSwitch(); toast(`${p.name} disimpan Â· ${modelFor(p)}`);
   };
   $('#pf-use') && ($('#pf-use').onclick = ()=>{ setActiveProfile(p.id); renderProfiles(); });
   $('#pf-dup').onclick = ()=>{ const cp = {...p, id:'p-'+uid(), name:p.name+' (salinan)'}; state.profiles.push(cp); editingProfileId = cp.id; save(); renderProfiles(); renderProfileSwitch(); toast('Profil diduplikat'); };
@@ -3455,7 +2965,7 @@ $('#s-save').onclick = ()=>{
   save(true); renderProfileSwitch(); toast('Pengaturan disimpan');
 };
 $('#s-test').onclick = async ()=>{
-  const st = $('#s-status'); st.className='status'; st.textContent='Menghubungkan�';
+  const st = $('#s-status'); st.className='status'; st.textContent='Menghubungkanâ€¦';
   try{
     const url = ($('#s-url').value.trim()||'https://api.openai.com/v1').replace(/\/+$/,'')+'/models';
     const key = $('#s-key').value.trim();
@@ -3463,7 +2973,7 @@ $('#s-test').onclick = async ()=>{
     if(!r.ok){ let m='HTTP '+r.status; try{ const j=await r.json(); m=j.error?.message||m; }catch{} throw new Error(m); }
     const j = await r.json(); const ids = (j.data||[]).map(x=>x.id).sort();
     $('#model-list').innerHTML = ids.slice(0,300).map(i=>`<option value="${esc(i)}">`).join('');
-    st.className='status ok'; st.textContent = `Terhubung � ${ids.length} model tersedia`;
+    st.className='status ok'; st.textContent = `Terhubung Â· ${ids.length} model tersedia`;
   }catch(e){ st.className='status bad'; st.textContent = 'Gagal: '+e.message; }
 };
 
@@ -3499,7 +3009,7 @@ $('#us-reset').onclick = async ()=>{ if(!await confirmDialog({tone:'warn', title
 /* ================= Sinkronisasi cloud (Supabase) ================= */
 const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1/dist/umd/supabase.js';
 const SYNC_KEY = 'rexxa:sync', T_ITEMS = 'rexxa_items';
-const SQL = `-- REXXA AI � tabel sinkronisasi (jalankan sekali di SQL Editor)
+const SQL = `-- REXXA AI Â· tabel sinkronisasi (jalankan sekali di SQL Editor)
 create table if not exists public.rexxa_items (
   user_id    uuid not null default auth.uid() references auth.users(id) on delete cascade,
   kind       text not null,            -- chat | profile | meta | usage
@@ -3607,7 +3117,7 @@ const Sync = (() => {
   const deviceName = () => { const ua = navigator.userAgent;
     const os = /iphone/i.test(ua)?'iPhone':/ipad/i.test(ua)?'iPad':/android/i.test(ua)?'Android':/windows/i.test(ua)?'Windows':/mac os/i.test(ua)?'Mac':/linux/i.test(ua)?'Linux':'Perangkat';
     const br = /edg\//i.test(ua)?'Edge':/chrome|crios/i.test(ua)?'Chrome':/firefox|fxios/i.test(ua)?'Firefox':/safari/i.test(ua)?'Safari':'Browser';
-    return `${os} � ${br}`; };
+    return `${os} Â· ${br}`; };
   const ready = () => !!(sb && session);
   const SUPABASE_JS_INTEGRITY = 'sha384-I0S+WEYpKLUT/t1llPKT4+JS+TvKhTBZW6gswQLnxORTICHRt89vwx5dtLl+EfeE';
   const loadScript = src => new Promise((res, rej) => { if(window.supabase?.createClient) return res();
@@ -3617,9 +3127,9 @@ const Sync = (() => {
     status = st; statusMsg = msg;
     const dot = $('#me-dot'), lab = $('#me-sync');
     dot.className = 'sync-dot ' + ({ok:'ok', busy:'busy', err:'bad'}[st]||'');
-    lab.textContent = st==='ok' ? 'Tersinkron' : st==='busy' ? 'Menyinkronkan�' : st==='err' ? 'Sinkron gagal' : st==='offline' ? 'Offline' : st==='login' ? 'Sinkron: belum masuk' : 'Pengaturan & profil';
+    lab.textContent = st==='ok' ? 'Tersinkron' : st==='busy' ? 'Menyinkronkanâ€¦' : st==='err' ? 'Sinkron gagal' : st==='offline' ? 'Offline' : st==='login' ? 'Sinkron: belum masuk' : 'Pengaturan & profil';
     dot.style.display = st==='off' ? 'none' : '';
-    $('#btn-me').title = st==='err' ? 'Sinkron gagal: '+msg+' � klik untuk detail' : '';
+    $('#btn-me').title = st==='err' ? 'Sinkron gagal: '+msg+' â€“ klik untuk detail' : '';
     $('#btn-me').dataset.sync = st;
     if(currentView==='dash' && currentTab==='sync') renderState();
   }
@@ -3628,7 +3138,7 @@ const Sync = (() => {
   function explain(e){
     const m = e?.message || String(e); let h = m;
     readOnly = /read-only transaction|read only transaction/i.test(m);
-    if(readOnly) h = 'Database Supabase penuh (mode read-only). Chat tetap aman di perangkat; perubahan akan terkirim otomatis setelah ada ruang. Buka tab Sinkronisasi ? Ruang database.';
+    if(readOnly) h = 'Database Supabase penuh (mode read-only). Chat tetap aman di perangkat; perubahan akan terkirim otomatis setelah ada ruang. Buka tab Sinkronisasi â†’ Ruang database.';
     else if(/permission denied/i.test(m)) h = 'Izin tabel ditolak. Jalankan ulang kode SQL terbaru di SQL Editor.';
     else if(/relation|does not exist|schema cache|Could not find/i.test(m)) h = 'Tabel rexxa_items tidak ditemukan. Jalankan kode SQL di SQL Editor.';
     else if(/row-level security/i.test(m)) h = 'Ditolak oleh Row Level Security. Keluar lalu masuk lagi.';
@@ -3672,7 +3182,7 @@ const Sync = (() => {
       }
       if(rows.length){
         persistNow();
-        // kirim bertahap (maks �1,5 MB per permintaan, karena gambar bisa besar)
+        // kirim bertahap (maks Â±1,5 MB per permintaan, karena gambar bisa besar)
         let batch = [], size = 0, fns = [];
         const flush = async () => { if(!batch.length) return;
           const {error} = await sb.from(T_ITEMS).upsert(batch.map(r=>({...r, user_id:session.user.id})), {onConflict:'user_id,kind,id'});
@@ -3796,7 +3306,7 @@ const Sync = (() => {
       if(/relation|does not exist|schema cache|Could not find/i.test(em) || error.code==='PGRST205' || error.code==='42P01')
         throw new Error('Tabel rexxa_items belum ada. Jalankan kode SQL di SQL Editor Supabase, pastikan muncul "Success", lalu klik Hubungkan lagi.');
       if(/Invalid API key|No API key|apikey/i.test(em) || (httpStatus===401 && !/permission denied/i.test(em) && !error.code))
-        throw new Error('Kunci anon/publishable tidak valid. Salin ulang dari Project Settings ? API.');
+        throw new Error('Kunci anon/publishable tidak valid. Salin ulang dari Project Settings â†’ API.');
       if(/Failed to fetch|NetworkError|Load failed/i.test(em))
         throw new Error('Tidak bisa menghubungi Supabase. Cek Project URL, internet, atau project sedang dijeda (Restore di dashboard).');
       // 401/403 "permission denied" sebelum login = tabel ada, aman dilanjutkan
@@ -3879,14 +3389,14 @@ const Sync = (() => {
     const st = cfg.storage; const quota = cfg.quotaMB*1048576;
     const local = imagesStats('all');
     let bar = '';
-    if(!st) bar = `<p class="sub" style="margin:0">Memuat ukuran database�</p>`;
+    if(!st) bar = `<p class="sub" style="margin:0">Memuat ukuran databaseâ€¦</p>`;
     else if(st.error==='missing') bar = `<p class="sub" style="margin:0">Indikator belum aktif. Salin SQL terbaru dari langkah 1 (tombol di bawah) lalu jalankan di SQL Editor.</p><div class="btns" style="margin-top:8px"><button class="btn" id="sy-sql2">${icon('copy')}Salin SQL terbaru</button></div>`;
     else if(st.error) bar = `<p class="sub" style="margin:0">Tidak bisa membaca ukuran database: ${esc(st.error)}</p>`;
     else {
       const pct = Math.min(1, st.db_bytes/quota); const col = pct>=.95?'var(--danger)':pct>=.8?'#F59E0B':'';
       bar = `<div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px"><b>${MB(st.db_bytes)} <span style="color:var(--muted);font-weight:400">dari ${fmt(cfg.quotaMB)} MB</span></b><span style="color:${col||'var(--text-2)'}">${fmtDec(pct*100,0)}%</span></div>
         <div class="bar-mini" style="height:10px"><i style="width:${Math.max(pct*100,1)}%;${col?`background:${col}`:''}"></i></div>
-        <p class="sub" style="margin:8px 0 0">Data REXXA milikmu ${MB(st.mine_bytes||0)} � ${fmt(st.rows||0)} item. Sisanya bawaan Supabase (�40�60 MB). Diperbarui ${relTime(cfg.storageAt)}.</p>`;
+        <p class="sub" style="margin:8px 0 0">Data REXXA milikmu ${MB(st.mine_bytes||0)} Â· ${fmt(st.rows||0)} item. Sisanya bawaan Supabase (Â±40â€“60 MB). Diperbarui ${relTime(cfg.storageAt)}.</p>`;
     }
     const opt = [['30','lebih dari 30 hari lalu'],['90','lebih dari 90 hari lalu'],['7','lebih dari 7 hari lalu'],['all','semua chat']];
     el.innerHTML = `
@@ -3895,7 +3405,7 @@ const Sync = (() => {
       ${bar}
       <div class="toggle-row" style="margin-top:12px"><div><div class="t">Sinkronkan gambar</div><div class="d">Matikan agar gambar tetap di perangkat pengirim saja; perangkat lain hanya menerima teks. Menghemat ruang database paling banyak.</div></div><label class="switch"><input type="checkbox" id="sy-imgs" ${cfg.syncImages?'checked':''}><span></span></label></div>
       <div style="margin:14px 0 6px;font-weight:600;font-size:14px">Hapus gambar dari chat lama</div>
-      <p class="sub" style="margin:0 0 10px">Teks chat tetap utuh; gambar diganti keterangan "gambar dihapus" di semua perangkat. Di perangkat ini ada ${fmt(local.n)} gambar (�${MB(local.bytes)}).</p>
+      <p class="sub" style="margin:0 0 10px">Teks chat tetap utuh; gambar diganti keterangan "gambar dihapus" di semua perangkat. Di perangkat ini ada ${fmt(local.n)} gambar (Â±${MB(local.bytes)}).</p>
       <div class="with-btn" style="flex-wrap:wrap"><select class="select" id="sy-days" style="flex:1;min-width:180px">${opt.map(([v,l])=>`<option value="${v}">${v==='all'?'Semua chat':'Chat yang terakhir aktif '+l}</option>`).join('')}</select><button class="btn danger" id="sy-strip">${icon('trash')}Hapus gambar</button></div>
       <div class="row-2" style="margin-top:14px;align-items:end">
         <div class="field"><label for="sy-quota">Kuota database (MB)</label><input class="input" id="sy-quota" type="number" min="100" step="100" value="${cfg.quotaMB}"><div class="help">Ubah kalau kamu memakai paket Supabase berbayar.</div></div>
@@ -3915,7 +3425,7 @@ const Sync = (() => {
     $('#sy-strip').onclick = async ()=>{
       const d = $('#sy-days').value; const days = d==='all' ? 'all' : parseInt(d); const st = imagesStats(days);
       if(!st.n){ toast('Tidak ada gambar pada rentang itu'); return; }
-      if(!await confirmDialog({tone:'danger', title:`Hapus ${st.n} gambar?`, html:`Gambar dari <b>${st.chats} chat</b>${st.bytes?` (�${MB(st.bytes)} di perangkat ini)`:''} akan dihapus dari database dan semua perangkat. Teks chat tetap ada.`, confirm:'Hapus gambar'})) return;
+      if(!await confirmDialog({tone:'danger', title:`Hapus ${st.n} gambar?`, html:`Gambar dari <b>${st.chats} chat</b>${st.bytes?` (Â±${MB(st.bytes)} di perangkat ini)`:''} akan dihapus dari database dan semua perangkat. Teks chat tetap ada.`, confirm:'Hapus gambar'})) return;
       const n = removeImages(days); save(true); if(currentView==='chat') renderChat(); renderStorage();
       toast(`${n} gambar dihapus`); schedule(200); setTimeout(()=>fetchStorage().catch(()=>{}), 4000);
     };
@@ -3977,18 +3487,18 @@ const Sync = (() => {
     const localOnly = state.chats.filter(c=>c.localOnly);
     el.innerHTML = `
       <h3>Data di cloud</h3><p class="sub">Lihat dan hapus riwayat yang tersimpan di database Supabase-mu.</p>
-      ${cloudItems===null ? `<div class="btns"><button class="btn" id="cl-load">${icon('cloud')}${cloudLoading?'Memuat�':'Lihat data di cloud'}</button></div>` : `
+      ${cloudItems===null ? `<div class="btns"><button class="btn" id="cl-load">${icon('cloud')}${cloudLoading?'Memuatâ€¦':'Lihat data di cloud'}</button></div>` : `
       <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">
         <div class="stat"><div class="v">${fmt(live.length)}</div><div class="l">Percakapan</div></div>
         <div class="stat"><div class="v">${fmt(profs)}</div><div class="l">Profil AI</div></div>
-        <div class="stat"><div class="v">${bytes?MB(bytes):'�'}</div><div class="l">Ukuran data</div></div>
+        <div class="stat"><div class="v">${bytes?MB(bytes):'â€“'}</div><div class="l">Ukuran data</div></div>
       </div>
       <div class="btns" style="justify-content:space-between">
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer"><input type="checkbox" id="cl-all" style="width:18px;height:18px;accent-color:var(--purple)" ${live.length && cloudSel.size===live.length?'checked':''}>Pilih semua</label>
-        <span style="display:flex;gap:8px"><button class="btn" id="cl-load">${icon('refresh')}${cloudLoading?'Memuat�':'Muat ulang'}</button><button class="btn danger" id="cl-del" ${cloudSel.size?'':'disabled'}>${icon('trash')}Hapus ${cloudSel.size||''}</button></span>
+        <span style="display:flex;gap:8px"><button class="btn" id="cl-load">${icon('refresh')}${cloudLoading?'Memuatâ€¦':'Muat ulang'}</button><button class="btn danger" id="cl-del" ${cloudSel.size?'':'disabled'}>${icon('trash')}Hapus ${cloudSel.size||''}</button></span>
       </div>
-      <div class="cl-list">${live.length ? live.map(r=>`<label class="cl-row"><input type="checkbox" data-id="${esc(r.id)}" ${cloudSel.has(r.id)?'checked':''}><span style="flex:1;min-width:0"><div class="n">${esc(r.title||'Tanpa judul')}</div><div class="d">${r.messages!=null?fmt(r.messages)+' pesan � ':''}${r.bytes?MB(r.bytes)+' � ':''}${relTime(r.updated_at)}</div></span>${localIds.has(r.id)?'':'<span class="tag cloud">hanya di cloud</span>'}</label>`).join('') : '<div class="cl-row" style="cursor:default"><span class="d">Tidak ada percakapan di cloud.</span></div>'}</div>
-      ${localOnly.length ? `<p class="sub" style="margin:10px 0 0">${localOnly.length} percakapan disimpan hanya di perangkat ini (ikon ?? di sidebar), tidak ada di cloud.</p>`:''}
+      <div class="cl-list">${live.length ? live.map(r=>`<label class="cl-row"><input type="checkbox" data-id="${esc(r.id)}" ${cloudSel.has(r.id)?'checked':''}><span style="flex:1;min-width:0"><div class="n">${esc(r.title||'Tanpa judul')}</div><div class="d">${r.messages!=null?fmt(r.messages)+' pesan Â· ':''}${r.bytes?MB(r.bytes)+' Â· ':''}${relTime(r.updated_at)}</div></span>${localIds.has(r.id)?'':'<span class="tag cloud">hanya di cloud</span>'}</label>`).join('') : '<div class="cl-row" style="cursor:default"><span class="d">Tidak ada percakapan di cloud.</span></div>'}</div>
+      ${localOnly.length ? `<p class="sub" style="margin:10px 0 0">${localOnly.length} percakapan disimpan hanya di perangkat ini (ikon ðŸ“± di sidebar), tidak ada di cloud.</p>`:''}
       ${gone.length ? `<div class="toggle-row" style="margin-top:8px"><div><div class="t">${fmt(gone.length)} jejak percakapan terhapus</div><div class="d">Isinya sudah kosong; tersisa penanda kecil agar perangkat yang sedang offline ikut menghapus. Aman dibersihkan bila semua perangkat sudah sinkron.</div></div><button class="btn" id="cl-purge" style="flex:none">${icon('refresh')}Bersihkan</button></div>`:''}
       <div class="danger-zone"><h4>Zona berbahaya</h4>
         <div class="dz-row"><div><div class="t">Hapus semua riwayat chat</div><div class="d">Dari cloud dan semua perangkat. Profil AI & pengaturan tetap.</div></div><button class="btn danger" id="cl-wipe">${icon('trash')}Hapus semua</button></div>
@@ -4029,7 +3539,7 @@ const Sync = (() => {
         try{ await sb.auth.signOut(); }catch{}
         cfg.lastPull = null; cfg.sigs = {}; cfg.sentTomb = {}; cfg.metaRev = 0; cfg.uid = null; cfg.storage = null; saveCfg();
         state.tombstones = {}; state.remoteUsage = {}; persistNow(); cloudItems = null;
-        if(res.user_deleted===false) dialog({tone:'warn', title:'Data cloud sudah dihapus', html:'Semua data sudah terhapus, tapi akunnya belum. Hapus manual di <b>Supabase ? Authentication ? Users</b>.', confirm:'Mengerti', cancel:false});
+        if(res.user_deleted===false) dialog({tone:'warn', title:'Data cloud sudah dihapus', html:'Semua data sudah terhapus, tapi akunnya belum. Hapus manual di <b>Supabase â†’ Authentication â†’ Users</b>.', confirm:'Mengerti', cancel:false});
         else toast('Akun dan semua data cloud dihapus');
         render();
       }catch(e){
@@ -4049,7 +3559,7 @@ const Sync = (() => {
       : !session ? ['Terhubung ke Supabase', 'Masuk atau daftar akun untuk mulai menyinkronkan.']
       : status==='err' ? ['Sinkron gagal', statusMsg || 'Coba lagi beberapa saat.']
       : status==='offline' ? ['Offline', 'Perubahan akan dikirim saat kembali online.']
-      : status==='busy' ? ['Menyinkronkan�', `Akun ${cfg.email}`]
+      : status==='busy' ? ['Menyinkronkanâ€¦', `Akun ${cfg.email}`]
       : ['Semua perangkat tersinkron', cfg.email];
     const meta = (session && sb && status!=='err') ? [t ? `Terakhir ${t}` : '', deviceName()].filter(Boolean) : [];
     el.innerHTML = `<div class="big">${icon(session?'cloud':'link')}</div><div class="ss-txt"><h3>${esc(h)}</h3><p>${esc(p)}</p>${meta.length?`<div class="ss-meta">${meta.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}</div>${session?`<button class="btn" id="sy-now">${icon('refresh')}Sinkronkan sekarang</button>`:''}`;
@@ -4062,7 +3572,7 @@ const Sync = (() => {
     $('#sy-disconnect').hidden = !sb;
     $('#sy-setup').hidden = !!session; $('#sy-grid').classList.toggle('one', !!session);
     $('#sy-account h3').textContent = session ? 'Akun sinkron' : '2. Masuk ke akun sinkron';
-    $('#sy-acc-sub').textContent = session ? `Masuk sebagai ${cfg.email} � ${hostOf(cfg.url)}` : 'Pakai email dan password yang sama di laptop dan HP.'; $('#sy-connect').innerHTML = icon('bolt') + (sb ? 'Hubungkan ulang' : 'Hubungkan');
+    $('#sy-acc-sub').textContent = session ? `Masuk sebagai ${cfg.email} Â· ${hostOf(cfg.url)}` : 'Pakai email dan password yang sama di laptop dan HP.'; $('#sy-connect').innerHTML = icon('bolt') + (sb ? 'Hubungkan ulang' : 'Hubungkan');
     const body = $('#sy-acc-body');
     $('#sy-storage').hidden = true; $('#sy-cloud').hidden = true;
     if(!sb){ body.innerHTML = `<p class="sub" style="margin:0">Selesaikan langkah 1 dulu.</p>`; return; }
@@ -4076,7 +3586,7 @@ const Sync = (() => {
       const go = async (mode) => {
         const email = $('#sy-email').value.trim(), password = $('#sy-pass').value;
         if(!email || password.length < 6){ st.className='status bad'; st.textContent='Isi email dan password minimal 6 karakter.'; return; }
-        st.className='status'; st.textContent = mode==='up' ? 'Mendaftarkan�' : 'Masuk�';
+        st.className='status'; st.textContent = mode==='up' ? 'Mendaftarkanâ€¦' : 'Masukâ€¦';
         const r = mode==='up' ? await sb.auth.signUp({email, password, options:{emailRedirectTo: location.origin+location.pathname}}) : await sb.auth.signInWithPassword({email, password});
         if(r.error){ st.className='status bad'; st.textContent = /Invalid login/i.test(r.error.message) ? 'Email atau password salah.' : /not confirmed/i.test(r.error.message) ? 'Email belum dikonfirmasi. Cek kotak masuk emailmu.' : r.error.message; return; }
         cfg.email = email; saveCfg();
@@ -4120,7 +3630,7 @@ const Sync = (() => {
 })();
 $('#sy-copy-sql').onclick = async e=>{ const b = e.currentTarget; await copyText(SQL); b.innerHTML = icon('check')+'<span>Tersalin</span>'; setTimeout(()=>b.innerHTML = icon('copy')+'<span>Salin SQL</span>', 1400); };
 $('#sy-connect').onclick = async ()=>{
-  const st = $('#sy-cstatus'); st.className='status'; st.textContent='Menghubungkan�';
+  const st = $('#sy-cstatus'); st.className='status'; st.textContent='Menghubungkanâ€¦';
   try{ await Sync.connect($('#sy-url').value, $('#sy-key').value); st.className='status ok'; st.textContent='Terhubung'; Sync.render(); }
   catch(e){ if(!e?.message) e = new Error('Kesalahan tanpa pesan dari Supabase. Coba muat ulang halaman.'); st.className='status bad'; st.textContent = /Gagal memuat pustaka/.test(e.message) ? 'Pustaka Supabase (cdn.jsdelivr.net) tidak bisa dimuat. Matikan ad-blocker/VPN atau coba jaringan lain.' : e.message; Sync.setStatus('err', e.message); }
 };
@@ -4131,6 +3641,7 @@ const isTouch = matchMedia('(hover:none) and (pointer:coarse)').matches;
 input.setAttribute('enterkeyhint', isTouch ? 'enter' : 'send');
 $('#btn-new-top').onclick = ()=>{ newChat(); haptic(); };
 $('#search-close').onclick = closeSearch;
+$('#menu-scrim').onclick = ()=>closeMenus();
 function haptic(ms=8){ try{ if(isTouch) navigator.vibrate?.(ms); }catch{} }
 sendBtn.addEventListener('click', ()=>haptic(), true);
 

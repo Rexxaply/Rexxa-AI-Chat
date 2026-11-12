@@ -68,7 +68,9 @@ Tab **Jelajah** di menu Manga: pilih sumber **Shinigami**, **Komiku**, **Kiryuu*
 
 **Pemakaian**
 - Ketuk judul → **Mulai baca / Lanjut Chapter X**. Reader punya mode **Webtoon ↕**, **Halaman →**, dan **Manga ←**; ketuk gambar untuk menyembunyikan bar.
-- Posisi baca tersimpan di perangkat; chapter yang sudah dibaca diberi tanda.
+- Posisi baca tersimpan di perangkat (chapter, halaman, dan posisi scroll di mode Webtoon); chapter yang sudah dibaca diberi tanda.
+- **Lanjut membaca**: baris di atas tab Jelajah berisi 8 judul terakhir; ketuk untuk langsung membuka reader di halaman terakhir.
+- Tab **Riwayat**: semua judul yang pernah dibaca di perangkat ini (maks. 150), dengan chapter, halaman & progres; **Lanjut** membuka tepat di posisi terakhir. Posisi juga tersimpan bila aplikasi ditutup tanpa menutup reader. Untuk Folder HP, pilih ulang foldernya lalu tekan Lanjut lagi.
 - **Bookmark** → judul masuk tab **Diikuti** dan ikut dicek tiap jam. Chapter baru muncul di tab **Update** dan dikirim sebagai notifikasi; ketuk notifikasinya untuk langsung membuka chapter itu di reader.
 - 🔔 di tab Diikuti untuk membisukan, 🗑 (atau tombol **Di-bookmark**) untuk menghapus bookmark.
 

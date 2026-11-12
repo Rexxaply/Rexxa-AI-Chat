@@ -10103,7 +10103,7 @@ $$);`;
             bmBusy = true; paint();
             try {
               const r = await call({ action: "follow_web", source: ex.src, manga_id: d.manga.id, title: d.manga.title, cover: d.manga.cover,
-                ...(ex.src === "shinigami" ? { snapshot: { title: d.manga.title, cover: d.manga.cover, chapters: (d.chapters || []).slice(0, 80) } } : {}) });
+                ...(DIRECT[ex.src] ? { snapshot: { title: d.manga.title, cover: d.manga.cover, chapters: (d.chapters || []).slice(0, 80) } } : {}) });
               follows = [r.follow, ...(follows || []).filter((x) => x.manga_id !== r.follow.manga_id)];
               const ps = await pushState();
               toast(ps === "on" ? "Di-bookmark · kamu akan dapat notifikasi chapter baru" : "Di-bookmark · aktifkan notifikasi di atas agar HP berbunyi saat chapter baru rilis");
@@ -10305,56 +10305,13 @@ $$);`;
             return { ingest, detail, pages, html, modeFor, find };
           })();
 
-          /* ---------- Shinigami lewat browser: API-nya di balik Cloudflare yang menolak server Supabase, tapi biasanya
-             mengizinkan koneksi dari HP. Urutan: langsung dari browser → cadangan lewat server. ---------- */
-          const SHNG = (() => {
-            const API = "https://api.shngm.io", SITE = "https://11.shinigami.asia";
+          /* ---------- sumber yang dibaca langsung dari browser HP ----------
+             Shinigami & WestManga memakai Cloudflare yang menolak server Supabase, tapi biasanya mengizinkan koneksi dari HP.
+             Urutan: langsung dari browser → cadangan lewat server (Edge Function). */
+          function viaBrowser(name, ad) {
             let mode = "auto"; // "direct" = browser berhasil, "server" = browser gagal tapi server berhasil
-            async function get(path) {
-              const r = await fetch(API + path, { headers: { Accept: "application/json" }, referrerPolicy: "no-referrer", credentials: "omit" });
-              if (!r.ok) throw new Error(`HTTP ${r.status}`);
-              return await r.json();
-            }
-            const coverOf = (o) => String(o?.cover_portrait_url || o?.cover_image_url || "");
-            async function browse(b) {
-              const page = b.page || 1, limit = b.limit || 10;
-              const p = new URLSearchParams({ page: String(page), page_size: String(limit), sort: b.sort === "popular" ? "popularity" : "latest", sort_order: "desc" });
-              if (b.q) p.set("q", b.q);
-              if (b.type) p.set("format", b.type);
-              const j = await get(`/v1/manga/list?${p}`);
-              const items = (j?.data || []).filter((m) => m?.manga_id).map((m) => ({ id: String(m.manga_id), title: String(m.title || ""), cover: coverOf(m), type: b.type || "" }));
-              const total = j?.meta?.total_page != null ? Number(j.meta.total_page) : null;
-              return { items, page, totalPages: total, hasNext: total != null ? page < total : items.length >= limit };
-            }
-            async function chapters(id) {
-              const j = await get(`/v1/chapter/${encodeURIComponent(id)}/list?page_size=3000`);
-              return (j?.data || []).filter((c) => c?.chapter_id).map((c) => ({
-                id: String(c.chapter_id), ch: c.chapter_number != null ? String(c.chapter_number).replace(/\.0+$/, "") : null, vol: null,
-                title: String(c.chapter_title || "").trim(), lang: "id", at: c.release_date ? new Date(c.release_date).toISOString() : null, locked: false,
-                url: `${SITE}/chapter/${c.chapter_id}`,
-              }));
-            }
-            async function detail(id) {
-              const [d, chs] = await Promise.all([get(`/v1/manga/detail/${encodeURIComponent(id)}`).then((j) => j?.data), chapters(id)]);
-              if (!d) throw new Error("Seri Shinigami tidak ditemukan");
-              const tax = d.taxonomy || {};
-              return {
-                manga: { id, title: String(d.title || ""), cover: coverOf(d), desc: String(d.description || "").trim(),
-                  status: { 1: "ongoing", 2: "completed", 3: "hiatus" }[Number(d.status)] || "",
-                  tags: [...(tax.Genre || []), ...(tax.Format || [])].map((x) => x?.name).filter(Boolean).slice(0, 8),
-                  author: (tax.Author || []).map((x) => x?.name).filter(Boolean).join(", "), url: `${SITE}/series/${id}` },
-                chapters: chs,
-              };
-            }
-            async function pages(id) {
-              const d = (await get(`/v1/chapter/detail/${encodeURIComponent(id)}`))?.data;
-              const base = String(d?.base_url || ""), path = String(d?.chapter?.path || "");
-              const local = (d?.chapter?.data || []).map((f) => ({ direct: /^https?:/i.test(f) ? f : base + path + f }));
-              if (!local.length) throw new Error("Chapter ini tidak berisi gambar.");
-              return { local };
-            }
             async function run(body) {
-              const fn = { browse: () => browse(body), detail: () => detail(body.manga_id), pages: () => pages(body.chapter_id) }[body.action];
+              const fn = { browse: () => ad.browse(body), detail: () => ad.detail(body.manga_id), pages: () => ad.pages(body.chapter_id) }[body.action];
               if (!fn) return call(body);
               let errDirect = null;
               if (mode !== "server") {
@@ -10363,21 +10320,138 @@ $$);`;
               try { const r = await call(body); mode = "server"; return r; }
               catch (e) {
                 if (mode === "server") mode = "auto"; // server juga gagal: coba browser lagi lain kali
-                throw new Error(`Shinigami tidak bisa diakses. Dari HP: ${errDirect ? (/Failed to fetch|NetworkError|Load failed/i.test(errDirect.message) ? "diblokir browser (CORS) atau jaringan" : errDirect.message) : "-"}. Dari server: ${e.message}`);
+                const why = !errDirect ? "-" : /Failed to fetch|NetworkError|Load failed|CORS/i.test(errDirect.message) ? "diblokir browser (CORS) atau jaringan" : errDirect.message;
+                throw new Error(`${name} tidak bisa diakses. Dari HP: ${why}. Dari server: ${e.message}`);
               }
             }
-            return { run, chapters, mode: () => mode };
-          })();
-          const srcCall = (body) => (body.source === "shinigami" ? SHNG.run(body) : call(body));
-          // bookmark Shinigami dicek dari aplikasi (server diblokir Cloudflare); hasilnya dikirim ke server → riwayat Update & push ke semua perangkat
+            return { run, chapters: ad.chapters, mode: () => mode };
+          }
+          const jget = async (url, headers = {}) => {
+            const r = await fetch(url, { headers: { Accept: "application/json", ...headers }, referrerPolicy: "no-referrer", credentials: "omit" });
+            if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
+            return await r.json();
+          };
+          const SHNG = viaBrowser("Shinigami", (() => {
+            const API = "https://api.shngm.io", SITE = "https://11.shinigami.asia";
+            const get = (path) => jget(API + path);
+            const coverOf = (o) => String(o?.cover_portrait_url || o?.cover_image_url || "");
+            async function chapters(id) {
+              const j = await get(`/v1/chapter/${encodeURIComponent(id)}/list?page_size=3000`);
+              return (j?.data || []).filter((c) => c?.chapter_id).map((c) => ({
+                id: String(c.chapter_id), ch: c.chapter_number != null ? String(c.chapter_number).replace(/\.0+$/, "") : null, vol: null,
+                title: String(c.chapter_title || "").trim(), lang: "id", at: c.release_date ? new Date(c.release_date).toISOString() : null, locked: false,
+                url: `${SITE}/chapter/${c.chapter_id}`,
+              }));
+            }
+            return {
+              chapters,
+              async browse(b) {
+                const page = b.page || 1, limit = b.limit || 10;
+                const p = new URLSearchParams({ page: String(page), page_size: String(limit), sort: b.sort === "popular" ? "popularity" : "latest", sort_order: "desc" });
+                if (b.q) p.set("q", b.q);
+                if (b.type) p.set("format", b.type);
+                const j = await get(`/v1/manga/list?${p}`);
+                const items = (j?.data || []).filter((m) => m?.manga_id).map((m) => ({ id: String(m.manga_id), title: String(m.title || ""), cover: coverOf(m), type: b.type || "" }));
+                const total = j?.meta?.total_page != null ? Number(j.meta.total_page) : null;
+                return { items, page, totalPages: total, hasNext: total != null ? page < total : items.length >= limit };
+              },
+              async detail(id) {
+                const [d, chs] = await Promise.all([get(`/v1/manga/detail/${encodeURIComponent(id)}`).then((j) => j?.data), chapters(id)]);
+                if (!d) throw new Error("Seri Shinigami tidak ditemukan");
+                const tax = d.taxonomy || {};
+                return {
+                  manga: { id, title: String(d.title || ""), cover: coverOf(d), desc: String(d.description || "").trim(),
+                    status: { 1: "ongoing", 2: "completed", 3: "hiatus" }[Number(d.status)] || "",
+                    tags: [...(tax.Genre || []), ...(tax.Format || [])].map((x) => x?.name).filter(Boolean).slice(0, 8),
+                    author: (tax.Author || []).map((x) => x?.name).filter(Boolean).join(", "), url: `${SITE}/series/${id}` },
+                  chapters: chs,
+                };
+              },
+              async pages(id) {
+                const d = (await get(`/v1/chapter/detail/${encodeURIComponent(id)}`))?.data;
+                const base = String(d?.base_url || ""), path = String(d?.chapter?.path || "");
+                const local = (d?.chapter?.data || []).map((f) => ({ direct: /^https?:/i.test(f) ? f : base + path + f }));
+                if (!local.length) throw new Error("Chapter ini tidak berisi gambar.");
+                return { local };
+              },
+            };
+          })());
+          const WEST = viaBrowser("WestManga", (() => {
+            const SITES = ["https://v1.westmanga.my", "https://v1.westmanga.top"];
+            const TYPE = { JP: "manga", KR: "manhwa", CN: "manhua" }, COUNTRY = { manga: "JP", manhwa: "KR", manhua: "CN" };
+            let base = SITES[0], tok = null, exp = 0;
+            const abs = (u) => (!u ? "" : /^https?:/i.test(u) ? u : base + (u.startsWith("/") ? "" : "/") + u);
+            async function token(force) {
+              if (!force && tok && Date.now() < exp - 5 * 60e3) return tok;
+              try { const j = await jget(base + "/api/visit-token"); if (j?.status && j.token) { tok = String(j.token); exp = j.expires_at ? j.expires_at * 1000 : Date.now() + 3600e3; } } catch {}
+              return tok || "";
+            }
+            // visit token wajib (header X-WM-Visit); 403/404 = token kedaluwarsa → ambil baru sekali; domain cermin bila yang utama gagal
+            async function get(path) {
+              let last = null;
+              for (const b of [base, ...SITES.filter((x) => x !== base)]) {
+                base = b;
+                for (const force of [false, true]) {
+                  try { const t = await token(force); return await jget(b + path, t ? { "X-WM-Visit": t } : {}); }
+                  catch (e) { last = e; if (!(e.status === 403 || e.status === 404)) break; }
+                }
+              }
+              throw last || new Error("WestManga tidak bisa dihubungi");
+            }
+            async function detailRaw(id) {
+              const d = (await get(`/api/comic/${encodeURIComponent(id)}`))?.data;
+              if (!d?.slug) throw new Error("Seri WestManga tidak ditemukan");
+              return d;
+            }
+            const mapCh = (c) => {
+              const num = String(c.number ?? "").trim(), n = Number(num.replace(",", "."));
+              return { id: String(c.slug), ch: num ? (Number.isFinite(n) ? String(n) : num) : null, vol: null, title: "", lang: "id",
+                at: c.updated_at?.time ? new Date(Number(c.updated_at.time) * 1000).toISOString() : null, locked: false, url: `${base}/view/${c.slug}` };
+            };
+            return {
+              chapters: async (id) => ((await detailRaw(id)).chapters || []).filter((c) => c?.slug).map(mapCh),
+              async browse(b) {
+                const page = b.page || 1, limit = b.limit || 10;
+                const p = new URLSearchParams({ page: String(page), per_page: String(limit), type: "Comic", orderBy: b.sort === "popular" ? "Popular" : "Update" });
+                if (b.q) p.set("q", b.q);
+                if (b.type) p.set("country", COUNTRY[b.type]);
+                const j = await get(`/api/contents?${p}`);
+                const items = (j?.data || []).filter((m) => m?.slug).map((m) => ({ id: String(m.slug), title: String(m.title || m.slug), cover: abs(m.cover), type: TYPE[m.country_id] || b.type || "" }));
+                const last = j?.paginator?.last_page != null ? Number(j.paginator.last_page) : null;
+                return { items, page, totalPages: last, hasNext: last != null ? page < last : items.length >= limit };
+              },
+              async detail(id) {
+                const d = await detailRaw(id), type = TYPE[d.country_id] || "";
+                const tmp = document.createElement("div"); tmp.innerHTML = String(d.sinopsis || "").replace(/<\/p>\s*<p[^>]*>/gi, "\n\n").replace(/<br\s*\/?>/gi, "\n");
+                return {
+                  manga: { id: String(d.slug), title: String(d.title || d.slug), cover: abs(d.cover), desc: (tmp.textContent || "").trim(),
+                    tags: [...(type ? [type[0].toUpperCase() + type.slice(1)] : []), ...(d.genres || []).map((g) => g?.name).filter(Boolean)].slice(0, 8),
+                    status: { ongoing: "ongoing", completed: "completed", hiatus: "hiatus" }[String(d.status || "").toLowerCase()] || "",
+                    author: String(d.author || ""), url: `${base}/comic/${d.slug}` },
+                  chapters: (d.chapters || []).filter((c) => c?.slug).map(mapCh),
+                };
+              },
+              async pages(id) {
+                const d = (await get(`/api/v/${encodeURIComponent(id)}`))?.data;
+                const local = (d?.images || []).map((x) => ({ direct: abs(x) })).filter((x) => x.direct);
+                if (!local.length) throw new Error("Chapter ini tidak berisi gambar.");
+                return { local };
+              },
+            };
+          })());
+          const DIRECT = { shinigami: SHNG, westmanga: WEST };
+          const srcCall = (body) => (DIRECT[body.source] ? DIRECT[body.source].run(body) : call(body));
+          // bookmark dari sumber yang menolak server dicek dari aplikasi; hasilnya dikirim ke server → riwayat Update & push ke semua perangkat
           async function clientCheck() {
-            const list = (follows || []).filter((f) => f.source === "shinigami");
-            if (!list.length || Date.now() - (mc.shngChk || 0) < 20 * 60e3) return;
-            mc.shngChk = Date.now(); saveMc();
-            let found = 0;
-            for (const f of list.slice(0, 15)) {
+            const list = (follows || []).filter((f) => DIRECT[f.source]);
+            if (!list.length || Date.now() - (mc.directChk || 0) < 20 * 60e3) return;
+            mc.directChk = Date.now(); saveMc();
+            const down = new Set();
+            let found = 0, n = 0;
+            for (const f of list) {
+              if (down.has(f.source) || n >= 20) continue;
               let chs;
-              try { chs = await SHNG.chapters(webIdOf(f)); } catch { break; } // browser tidak bisa menjangkau Shinigami: berhenti
+              try { chs = await DIRECT[f.source].chapters(webIdOf(f)); n++; } catch { down.add(f.source); continue; } // browser tidak menjangkau situs ini
               try { const r = await call({ action: "web_report", manga_id: f.manga_id, chapters: chs.slice(0, 80) }); found += r.found || 0; } catch (e) { console.warn("web_report", e.message); }
             }
             if (found) refreshData();
@@ -10451,7 +10525,7 @@ $$);`;
               <div class="ex-acts">
                 <button class="btn primary" data-ex="read" ${!chs?.length ? "disabled" : ""}>${icon("book")}${resume ? `Lanjut ${esc(chLabel(resume).replace(/ - .*/, ""))}` : "Mulai baca"}</button>
                 ${ex.src === "folder" ? "" : `<button class="btn ex-bmbtn ${bmOf(ex.src, m.id) ? "on" : ""}" data-ex="bm" ${bmBusy || !chs ? "disabled" : ""} aria-pressed="${bmOf(ex.src, m.id) ? "true" : "false"}">${icon(bmOf(ex.src, m.id) ? "check" : "bell")}${bmBusy ? "Menyimpan…" : bmOf(ex.src, m.id) ? "Di-bookmark" : "Bookmark"}</button>
-                ${ex.src === "shinigami" && SHNG.mode() === "direct" ? "" : `<button class="icon-btn ex-dlbtn" data-ex="dl" ${!chs?.length ? "disabled" : ""} title="Unduh chapter (ZIP/CBZ)" aria-label="Unduh">${icon("download")}</button>`}`}
+                ${DIRECT[ex.src] && DIRECT[ex.src].mode() === "direct" ? "" : `<button class="icon-btn ex-dlbtn" data-ex="dl" ${!chs?.length ? "disabled" : ""} title="Unduh chapter (ZIP/CBZ)" aria-label="Unduh">${icon("download")}</button>`}`}
               </div>
               ${bmOf(ex.src, m.id) ? `<div class="ex-bmnote">${icon("bell")}<span>${bmOf(ex.src, m.id).notify === false ? "Notifikasi dibisukan untuk judul ini (atur di tab Diikuti)" : "Notifikasi chapter baru aktif · dicek tiap jam"}</span></div>` : ""}
               ${d.err ? `<div class="err">${esc(d.err)}</div>` : ""}

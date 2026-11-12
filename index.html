@@ -5185,6 +5185,17 @@
       .ex-type{position:absolute;left:6px;top:6px;font-size:10px;font-weight:800;letter-spacing:.02em;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.72);color:#fff}
       .ex-type.manga{color:#e5e7eb}.ex-type.manhwa{color:#93c5fd}.ex-type.manhua{color:#fca5a5}
       @media (min-width:820px){.ex-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.ex-filters{flex-direction:row;flex-wrap:wrap;gap:8px 24px}}
+      .rh-strip{margin:0 0 16px}
+      .rh-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;scroll-snap-type:x proximity}
+      .rh-row::-webkit-scrollbar{display:none}
+      .rh-card{flex:0 0 96px;display:flex;flex-direction:column;gap:6px;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;scroll-snap-align:start}
+      .rh-card .ex-t{font-size:12px;min-height:2.6em}
+      .rh-pos{position:absolute;left:5px;right:5px;bottom:9px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .rh-bar{display:block;height:4px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:6px 0 4px;max-width:220px}
+      .rh-bar>span{display:block;height:100%;background:var(--grad-purple);border-radius:inherit}
+      .rh-bar.abs{position:absolute;left:0;right:0;bottom:0;margin:0;border-radius:0;max-width:none;background:rgba(0,0,0,.55)}
+      .rh-cv{background:none;border:0;padding:0;cursor:pointer}
+      .rh-item .mg-acts .rh-go{display:inline-flex;align-items:center;gap:6px}
       .ex-back{margin-bottom:12px;font-size:14px}
       .ex-hero{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
       .ex-hero .ex-cv{width:112px;flex:none}
@@ -9365,9 +9376,9 @@ $$);`;
               <label class="mg-chk"><input type="checkbox" id="mg-only-id" ${mc.onlyId === false ? "" : "checked"}> Hanya yang punya chapter Indonesia/Inggris <small class="mg-hint">(hasil MangaUpdates: hanya Inggris)</small></label>
             </div>
             ${resultsHTML()}
-            <div class="ag-bar" style="margin-top:18px"><div class="seg" id="mg-seg"><button data-t="follow" class="${tab === "follow" ? "on" : ""}">Diikuti${nf ? ` (${nf})` : ""}</button><button data-t="upd" class="${tab === "upd" ? "on" : ""}">Update${nu ? ` <span class="nav-badge" style="display:inline-grid;margin-left:4px">${nu}</span>` : ""}</button><button data-t="explore" class="${tab === "explore" ? "on" : ""}">Jelajah</button></div><div class="spacer"></div>${tab === "explore" ? "" : `<button class="btn" data-act="check" ${busy ? "disabled" : ""}>${icon("refresh")}${busy ? "Mengecek…" : "Cek sekarang"}</button>`}</div>
+            <div class="ag-bar" style="margin-top:18px"><div class="seg" id="mg-seg"><button data-t="follow" class="${tab === "follow" ? "on" : ""}">Diikuti${nf ? ` (${nf})` : ""}</button><button data-t="upd" class="${tab === "upd" ? "on" : ""}">Update${nu ? ` <span class="nav-badge" style="display:inline-grid;margin-left:4px">${nu}</span>` : ""}</button><button data-t="explore" class="${tab === "explore" ? "on" : ""}">Jelajah</button><button data-t="hist" class="${tab === "hist" ? "on" : ""}">Riwayat</button></div><div class="spacer"></div>${tab === "explore" || tab === "hist" ? "" : `<button class="btn" data-act="check" ${busy ? "disabled" : ""}>${icon("refresh")}${busy ? "Mengecek…" : "Cek sekarang"}</button>`}</div>
             ${lastErr ? `<div class="err" style="margin-bottom:10px">${esc(lastErr)}</div>` : ""}
-            <div id="mg-list">${tab === "follow" ? followHTML() : tab === "explore" ? EX.html() : updHTML()}</div>
+            <div id="mg-list">${tab === "follow" ? followHTML() : tab === "explore" ? EX.html() : tab === "hist" ? EX.histHTML() : updHTML()}</div>
             <p class="sub" style="margin-top:18px">Data dari <a href="https://mangadex.org" target="_blank" rel="noopener" style="color:var(--blue)">MangaDex</a> dan <a href="https://www.mangaupdates.com" target="_blank" rel="noopener" style="color:var(--blue)">MangaUpdates</a>. Chapter MangaDex dibuka di MangaDex; Shinigami, Komiku, Kiryuu &amp; WestManga dibaca di aplikasi (tab Jelajah); MangaUpdates hanya info rilis. <button class="mg-link" data-act="setup">Pengaturan server</button></p>`;
           if (tab === "upd" && nu) { mc.seen = Date.now(); saveMc(); setTimeout(badge, 300); }
           if (tab === "explore") EX.mount();
@@ -10537,11 +10548,59 @@ $$);`;
           function html() {
             return `<div id="mg-ex">${body()}</div>`;
           }
+          /* ---------- Riwayat / Lanjut membaca ---------- */
+          const SRC_LABEL = { shinigami: "Shinigami", komiku: "Komiku", kiryuu: "Kiryuu", westmanga: "WestManga", folder: "Folder HP" };
+          const recent = () => Object.entries(mc.read || {}).filter(([, r]) => r && r.src && r.mid && SRC_LABEL[r.src]).map(([k, r]) => ({ k, ...r })).sort((a, b) => (b.at || 0) - (a.at || 0));
+          const pct = (r) => (r.n ? Math.min(100, Math.round(((r.p || 0) + (r.f || 0)) / r.n * 100)) : 0);
+          const posText = (r) => `${r.chName || r.label || "Dibaca"}${r.n ? ` · hal. ${(r.p || 0) + 1}/${r.n}` : ""}`;
+          function histItem(r) {
+            return `<div class="mg-item rh-item">
+                <button class="rh-cv" data-rh="${esc(r.k)}" aria-label="Lanjut membaca ${esc(r.title)}">${r.cover ? `<img class="mg-cv" src="${esc(coverUrl(r.cover))}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="mg-cv ph">${icon(r.src === "folder" ? "folder" : "book")}</span>`}</button>
+                <div class="mg-txt"><div class="t"><span class="src-b ${(SRC[r.src] || {}).cls || "web"}">${esc(SRC_LABEL[r.src])}</span>${esc(r.title || "Manga")}</div>
+                  <div class="d">${esc(posText(r))}</div>
+                  <div class="rh-bar" aria-hidden="true"><span style="width:${pct(r)}%"></span></div>
+                  <div class="x">${r.at ? ago(r.at) : ""}${r.src === "folder" && !LOCAL.find(r.mid) ? " · pilih ulang foldernya untuk lanjut" : ""}</div></div>
+                <div class="mg-acts"><button class="btn primary sm rh-go" data-rh="${esc(r.k)}">${icon("book")}Lanjut</button><button class="icon-btn del" data-rh-del="${esc(r.k)}" title="Hapus dari riwayat" aria-label="Hapus dari riwayat">${icon("x")}</button></div>
+              </div>`;
+          }
+          function histHTML() {
+            const list = recent();
+            if (!list.length) return `<div class="ag-empty"><div class="big">${icon("clock")}</div><b>Belum ada riwayat baca</b>Judul yang kamu baca di REXXA (Jelajah atau Folder HP) muncul di sini, lengkap dengan halaman terakhirnya.</div>`;
+            return `<div class="mg-tools"><span class="lbl">Terakhir dibaca di perangkat ini</span><span class="cnt">${list.length} judul</span><button class="mg-link" data-rh-clear="1">Hapus semua</button></div>
+              <div class="mg-scroll pm-list scroll">${list.slice(0, 60).map(histItem).join("")}</div>`;
+          }
+          // baris "Lanjut membaca" di atas Jelajah (maks. 8 judul terakhir)
+          function continueHTML() {
+            const list = recent().filter((r) => r.src !== "folder" || LOCAL.find(r.mid)).slice(0, 8);
+            if (!list.length) return "";
+            return `<div class="rh-strip"><div class="sec-l">Lanjut membaca</div><div class="rh-row">${list.map((r) => `<button class="rh-card" data-rh="${esc(r.k)}">
+                <span class="ex-cv">${cv(r.cover)}<span class="rh-pos">${esc(r.label || "")}${r.n ? ` · ${(r.p || 0) + 1}/${r.n}` : ""}</span><span class="rh-bar abs"><span style="width:${pct(r)}%"></span></span></span>
+                <span class="ex-t">${esc(r.title || "Manga")}</span></button>`).join("")}</div></div>`;
+          }
+          // lanjut membaca: buka reader langsung di chapter & halaman terakhir
+          async function resume(k) {
+            const r = (mc.read || {})[k]; if (!r) return;
+            if (r.src === "folder") {
+              const sr = LOCAL.find(r.mid);
+              if (!sr) { tab = "explore"; ex.src = "folder"; ex.det = null; mc.exSrc = "folder"; saveMc(); await render(); $("#mg-seg")?.scrollIntoView({ block: "start" }); toast(`Pilih ulang folder "${r.title}" — posisi bacanya tetap tersimpan`, "info"); return; }
+              const i = sr.chapters.findIndex((c) => c.id === r.ch);
+              read({ id: sr.id, title: sr.title, cover: sr.cover }, "folder", sr.chapters, i >= 0 ? i : sr.chapters.length - 1, i >= 0 ? r.p : 0, i >= 0 ? r.f : 0, i >= 0 ? r.a : null);
+              return;
+            }
+            toast(`Membuka ${r.title || "manga"}…`, "info");
+            try {
+              const d = await srcCall({ action: "detail", source: r.src, manga_id: r.mid });
+              const chs = d.chapters || [];
+              const i = chs.findIndex((c) => c.id === r.ch);
+              if (i < 0) { toast("Chapter terakhir dibaca tidak ditemukan lagi di situs sumber, membuka halaman judulnya", "info"); tab = "explore"; ex.src = r.src; mc.exSrc = r.src; saveMc(); await render(); return openDetail(r.mid, r.title, r.cover); }
+              read({ ...d.manga, id: d.manga?.id || r.mid }, r.src, chs, i, r.p || 0, r.f || 0, r.a ?? null);
+            } catch (e) { toast(e.message, true); }
+          }
           function body() {
             if (ex.det) return detailHTML();
             const bar = `<div class="ex-bar"><div class="seg sm ex-srcs">${SOURCES.map((s) => `<button data-ex-src="${s.id}" class="${ex.src === s.id ? "on" : ""}">${s.id === "folder" ? icon("folder") : ""}${s.name}</button>`).join("")}</div></div>`;
-            if (ex.src === "folder") return bar + LOCAL.html();
-            return `${bar}
+            if (ex.src === "folder") return continueHTML() + bar + LOCAL.html();
+            return `${continueHTML()}${bar}
               <div class="mg-sbox ex-sbox">${icon("search")}<input id="ex-q" type="search" enterkeyhint="search" placeholder="Cari di ${esc(SOURCES.find((s) => s.id === ex.src).name)}…" value="${esc(ex.q)}" autocomplete="off">${ex.q ? `<button class="icon-btn" data-ex="clear" aria-label="Hapus pencarian">${icon("x")}</button>` : ""}<button class="btn primary" data-ex="search">Cari</button></div>
               <div class="ex-filters">
                 <div class="ex-fl"><span class="lbl">Tipe</span><div class="seg sm">${[["", "Semua"], ["manga", "Manga"], ["manhwa", "Manhwa"], ["manhua", "Manhua"]].map(([v, n]) => `<button data-ex-type="${v}" class="${ex.type === v ? "on" : ""}">${n}</button>`).join("")}</div></div>
@@ -10572,6 +10631,7 @@ $$);`;
             el.addEventListener("click", onReaderClick);
             el.querySelector("#rx-slider").addEventListener("input", (e) => { R.page = +e.target.value - 1; if (R.mode === "webtoon") el.querySelector(`[data-p="${R.page}"]`)?.scrollIntoView(); else drawPaged(); sub(); });
             el.querySelector("#rx-pages").addEventListener("scroll", onScroll, { passive: true });
+            ["touchstart", "wheel", "keydown", "mousedown"].forEach((ev) => el.addEventListener(ev, () => { if (R.restore) { R.restore = null; onScroll(); } }, { passive: true }));
             R.el = el; return el;
           }
           function freeUrls() { R.urls.forEach((u) => URL.revokeObjectURL(u)); R.urls = []; }
@@ -10583,7 +10643,7 @@ $$);`;
             if (!r.ok) throw new Error("HTTP " + r.status);
             const u = URL.createObjectURL(await r.blob()); R.urls.push(u); return u;
           }
-          async function openChapter(idx, startPage = 0) {
+          async function openChapter(idx, startPage = 0, frac = 0, anchor = null) {
             const el = ensureEl(); const c = R.chs[idx]; if (!c) return;
             R.ctl?.abort(); R.ctl = new AbortController(); freeUrls();
             R.idx = idx; R.page = 0; R.pages = [];
@@ -10596,7 +10656,9 @@ $$);`;
               R.pages = r.local ? r.local : R.src === "mangadex" ? (r.data || []).map((f) => ({ direct: `${r.base}/data/${r.hash}/${f}` })) : r.images || [];
               if (!R.pages.length) throw new Error("Chapter ini tidak berisi gambar.");
             } catch (e) { el.querySelector("#rx-pages").innerHTML = `<div class="rx-load err">${esc(e.message)}</div>`; return; }
-            R.page = Math.min(startPage, R.pages.length - 1);
+            R.page = Math.max(0, Math.min(startPage, R.pages.length - 1)); R.frac = frac || 0;
+            R.anchor = Math.max(0, Math.min(anchor ?? R.page, R.pages.length - 1));
+            R.restore = R.mode === "webtoon" && (R.anchor > 0 || R.frac > 0) ? { p: R.anchor, f: R.frac, until: Date.now() + 6000 } : null;
             mc.readCh = mc.readCh || {}; mc.readCh[R.src + "|" + c.id] = Date.now();
             const keys = Object.keys(mc.readCh); if (keys.length > 3000) keys.slice(0, keys.length - 3000).forEach((k) => delete mc.readCh[k]);
             saveProg();
@@ -10606,10 +10668,17 @@ $$);`;
             el.querySelector("#rx-slider").max = R.pages.length;
             draw();
           }
+          // posisi baca per judul: chapter, halaman, posisi di dalam halaman (mode Webtoon), plus data untuk daftar Riwayat
           function saveProg() {
-            const c = R.chs[R.idx]; if (!c) return;
+            const c = R.chs[R.idx]; if (!c || !R.m) return;
             mc.read = mc.read || {};
-            mc.read[progKey(R.src, R.m.id)] = { ch: c.id, p: R.page, label: c.ch != null && c.ch !== "" ? "Ch. " + c.ch : "Dibaca", at: Date.now() };
+            mc.read[progKey(R.src, R.m.id)] = {
+              ch: c.id, p: R.page, a: R.mode === "webtoon" ? R.anchor ?? R.page : R.page, f: R.mode === "webtoon" ? Math.round((R.frac || 0) * 1000) / 1000 : 0, n: R.pages.length || null,
+              label: c.ch != null && c.ch !== "" ? "Ch. " + c.ch : "Dibaca", chName: chLabel(c), at: Date.now(),
+              src: R.src, mid: R.m.id, title: R.m.title || "", cover: R.src === "folder" || /^blob:/.test(R.m.cover || "") ? "" : R.m.cover || "",
+            };
+            const keys = Object.keys(mc.read); // simpan maks. 150 judul terbaru
+            if (keys.length > 150) keys.sort((a, b) => (mc.read[a].at || 0) - (mc.read[b].at || 0)).slice(0, keys.length - 150).forEach((k) => delete mc.read[k]);
             saveMc();
           }
           function draw() {
@@ -10626,7 +10695,8 @@ $$);`;
                 loadInto(en.target, R.pages[+en.target.dataset.p]);
               }), { root: box, rootMargin: "200% 0px" });
               box.querySelectorAll(".rx-pg").forEach((h) => R.io.observe(h));
-              box.scrollTop = 0; box.querySelector(`[data-p="${R.page}"]`)?.scrollIntoView();
+              box.scrollTop = 0; box.querySelector(`[data-p="${R.restore ? R.restore.p : R.page}"]`)?.scrollIntoView();
+              if (R.restore) { keepRestore(); setTimeout(() => { if (R.restore) { keepRestore(); R.restore = null; onScroll(); } }, 6100); }
             } else drawPaged();
             sub();
           }
@@ -10638,7 +10708,14 @@ $$);`;
               await im.decode().catch(() => {});
               if (im.naturalWidth) { pg.w = im.naturalWidth; pg.h = im.naturalHeight; }
               holder.classList.add("ok"); holder.style.aspectRatio = ""; holder.replaceChildren(im);
+              keepRestore();
             } catch (e) { if (e.name !== "AbortError" && holder.isConnected) holder.innerHTML = `<span class="rx-ph err">Gagal memuat (${esc(e.message)})</span>`; }
+          }
+          function keepRestore() {
+            const rs = R.restore; if (!rs || R.mode !== "webtoon") return;
+            if (Date.now() > rs.until) { R.restore = null; return; }
+            const box = R.el.querySelector("#rx-pages"), h = box.querySelector(`[data-p="${rs.p}"]`);
+            if (h) box.scrollTop = h.offsetTop + rs.f * h.offsetHeight;
           }
           function drawPaged() {
             R.io?.disconnect();
@@ -10651,8 +10728,14 @@ $$);`;
           function onScroll() {
             if (R.mode !== "webtoon") return;
             const box = R.el.querySelector("#rx-pages"), mid = box.scrollTop + box.clientHeight / 2;
-            let k = 0; box.querySelectorAll(".rx-pg").forEach((h, i) => { if (h.offsetTop <= mid) k = i; });
-            if (k !== R.page) { R.page = k; sub(); clearTimeout(R.st); R.st = setTimeout(saveProg, 400); }
+            const top = box.scrollTop; let k = 0, a = 0;
+            box.querySelectorAll(".rx-pg").forEach((h, i) => { if (h.offsetTop <= mid) k = i; if (h.offsetTop <= top + 1) a = i; });
+            if (R.restore) return; // sedang mengembalikan posisi
+            // penanda posisi = halaman di tepi atas layar + seberapa jauh di dalamnya (halaman yang ditampilkan tetap yang di tengah layar)
+            const ha = box.querySelector(`[data-p="${a}"]`);
+            R.anchor = a; R.frac = ha && ha.offsetHeight ? Math.min(0.999, Math.max(0, (top - ha.offsetTop) / ha.offsetHeight)) : 0;
+            if (k !== R.page) { R.page = k; sub(); }
+            clearTimeout(R.st); R.st = setTimeout(saveProg, 400);
           }
           function sub(t) {
             const c = R.chs[R.idx];
@@ -10671,10 +10754,14 @@ $$);`;
             openChapter(R.chs.indexOf(nx), toEnd ? 1e9 : 0);
           }
           function close() {
-            R.ctl?.abort(); R.io?.disconnect(); freeUrls(); saveProg();
+            R.restore = null; saveProg(); R.ctl?.abort(); R.io?.disconnect(); freeUrls();
             R.el.hidden = true; document.body.classList.remove("rx-on");
             if (ex.det) paint();
+            if (tab === "hist" || (tab === "explore" && !ex.det)) render();
           }
+          // aplikasi ditutup / pindah aplikasi saat membaca: simpan posisi terakhir
+          document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && R.el && !R.el.hidden) saveProg(); });
+          addEventListener("pagehide", () => { if (R.el && !R.el.hidden) saveProg(); });
           function onReaderClick(e) {
             const md = e.target.closest("[data-rd-mode]")?.dataset.rdMode;
             if (md) { R.mode = md; if (R.src === "folder") mc.rdModeLocal = { ...(mc.rdModeLocal || {}), [R.m.id]: md }; else mc.rdMode = md; saveMc(); draw(); return; }
@@ -10686,10 +10773,10 @@ $$);`;
             if (a === "r") return step(R.mode === "rtl" ? -1 : 1);
             if (e.target.closest(".rx-pages")) R.el.classList.toggle("hide");
           }
-          function read(m, src, chs, idx, page) {
+          function read(m, src, chs, idx, page, frac, anchor) {
             R.m = m; R.src = src; R.chs = chs;
             R.mode = src === "folder" ? LOCAL.modeFor(m.id) : ["webtoon", "ltr", "rtl"].includes(mc.rdMode) ? mc.rdMode : "webtoon";
-            openChapter(idx, page || 0);
+            openChapter(idx, page || 0, frac || 0, anchor ?? null);
           }
           document.addEventListener("keydown", (e) => {
             if (!R.el || R.el.hidden) return;
@@ -10699,7 +10786,15 @@ $$);`;
           });
 
           /* ---------- event di tab Jelajah ---------- */
-          document.addEventListener("click", (e) => {
+          document.addEventListener("click", async (e) => {
+            const rh = e.target.closest("[data-rh]")?.dataset.rh;
+            if (rh) { e.preventDefault(); resume(rh); return; }
+            const rd = e.target.closest("[data-rh-del]")?.dataset.rhDel;
+            if (rd) { delete mc.read[rd]; saveMc(); render(); return; }
+            if (e.target.closest("[data-rh-clear]")) {
+              if (!(await confirmDialog({ tone: "danger", title: "Hapus semua riwayat baca?", html: "Posisi baca semua judul di perangkat ini akan dihapus. Bookmark tidak ikut terhapus.", confirm: "Hapus" }))) return;
+              mc.read = {}; saveMc(); render(); return;
+            }
             const fb = e.target.closest("[data-exf]");
             if (fb) { const f = (follows || []).find((x) => x.manga_id === fb.dataset.exf); if (f) openSeries(f.source, webIdOf(f), f.title, f.cover); return; }
             const ub = e.target.closest("[data-exu]");
@@ -10726,7 +10821,8 @@ $$);`;
               const d = ex.det, p = prog(ex.src, d.manga.id);
               let i = p ? d.chapters.findIndex((c) => c.id === p.ch) : -1;
               if (i < 0) { const first = d.chapters.slice().sort((a, b) => (parseFloat(a.ch) || 0) - (parseFloat(b.ch) || 0))[0]; i = d.chapters.indexOf(first); }
-              read(d.manga, ex.src, d.chapters, i, p && i >= 0 && d.chapters[i].id === p.ch ? p.p : 0);
+              const same = p && i >= 0 && d.chapters[i].id === p.ch;
+              read(d.manga, ex.src, d.chapters, i, same ? p.p : 0, same ? p.f : 0, same ? p.a : null);
             }
           });
           document.addEventListener("change", (e) => {
@@ -10749,7 +10845,7 @@ $$);`;
             return true;
           }
           addEventListener("hashchange", () => { if (/^#manga\/baca\//.test(location.hash)) fromHash(); });
-          return { html, mount, read, fromHash, clientCheck: () => clientCheck().catch(() => {}), go: (n) => load(Math.max(1, n), true), busy: () => ex.busy };
+          return { html, histHTML, mount, read, fromHash, clientCheck: () => clientCheck().catch(() => {}), go: (n) => load(Math.max(1, n), true), busy: () => ex.busy };
         })();
 
         /* ---------- event ---------- */

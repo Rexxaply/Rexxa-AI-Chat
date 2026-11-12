@@ -41,6 +41,16 @@ jobs:
             cp ../icons/icon-maskable-192.png $R/mipmap-$d/ic_launcher_round.png
             rm -f $R/mipmap-$d/ic_launcher_foreground.png
           done
+      - name: Firebase (notifikasi push native)
+        run: |
+          cp google-services.json android/app/google-services.json
+          R=android/app/src/main/res
+          mkdir -p $R/drawable
+          cp ../icons/badge-96.png $R/drawable/ic_stat_rexxa.png
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q POST_NOTIFICATIONS $M || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n</manifest>#' $M
+          sed -i 's#</application>#    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_rexxa" />\n        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="manga" />\n    </application>#' $M
+          grep -n "firebase\|POST_NOTIFICATIONS" $M || true
       - name: Kunci tanda tangan tetap (agar update bisa dipasang menimpa versi lama)
         run: mkdir -p ~/.android && cp rexxa-debug.keystore ~/.android/debug.keystore
       - name: Build APK

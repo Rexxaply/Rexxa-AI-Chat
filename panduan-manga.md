@@ -108,5 +108,5 @@ WestManga menolak dua jalur sekaligus: server Supabase diblokir Cloudflare, dan 
 
 **Perbedaan dengan versi web**
 - Unduhan manga tersimpan di folder `Documents/REXXA` di HP.
-- Notifikasi push (Web Push) tidak berjalan di dalam APK. Cek update untuk Shinigami/WestManga tetap jalan saat aplikasi dibuka. Untuk notifikasi pop-up, tetap pasang juga versi web (PWA) dan aktifkan notifikasinya di sana.
+- Notifikasi di APK memakai Firebase Cloud Messaging (bukan Web Push). Syarat: secret `FCM_SERVICE_ACCOUNT` (isi file kunci akun layanan Firebase) sudah ada di Supabase → Edge Functions → Secrets, dan Edge Function `rexxa-manga` v1.10.0 sudah di-deploy. Lalu di APK: Manga → Diikuti → Aktifkan notifikasi. Pop-up diatur di Setelan → Aplikasi → REXXA AI → Notifikasi → kategori "Update manga".
 - APK ditandatangani kunci debug (`apk/rexxa-debug.keystore`) yang ada di repo, supaya update bisa menimpa versi lama. Hanya pasang APK dari Release repo ini.

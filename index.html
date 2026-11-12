@@ -9074,6 +9074,20 @@ Setelah itu jawab singkat: ringkas event-nya dan katakan bahwa pengguna perlu me
         const base = () => (Sync.url?.() || "").replace(/\/+$/, "");
         const coverUrl = (c) => (!c ? "" : /^(https?:\/\/|data:|blob:)/.test(c) ? c : base() ? `${base()}/functions/v1/${FN}?cover=${encodeURIComponent(c)}` : "");
         const pushOK = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && location.protocol === "https:";
+        /* ---------- mode APK (Capacitor): permintaan HTTP lewat jaringan HP, tanpa batas CORS ---------- */
+        const NATIVE = (() => { try { return !!window.Capacitor?.isNativePlatform?.() && !!window.Capacitor?.Plugins?.CapacitorHttp; } catch { return false; } })();
+        let NATIVE_DIRECT = null; // diisi EX: { shinigami, westmanga } → dipakai unduhan saat berjalan sebagai APK
+        const b64bytes = (s) => { const bin = atob(String(s || "")); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+        async function nativeGet(url, { headers = {}, type = "json", signal } = {}) {
+          if (signal?.aborted) throw new DOMException("dibatalkan", "AbortError");
+          const r = await window.Capacitor.Plugins.CapacitorHttp.request({ url, method: "GET", headers, responseType: type, connectTimeout: 15000, readTimeout: 30000 });
+          if (signal?.aborted) throw new DOMException("dibatalkan", "AbortError");
+          if (r.status < 200 || r.status >= 300) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
+          const h = Object.fromEntries(Object.entries(r.headers || {}).map(([k, v]) => [k.toLowerCase(), String(v)]));
+          if (type === "json") return typeof r.data === "string" ? JSON.parse(r.data) : r.data;
+          const b = typeof r.data === "string" ? b64bytes(r.data) : new Uint8Array(r.data || []);
+          return { b, type: h["content-type"] || "" };
+        }
         async function call(body) {
           const client = sb(); if (!client) throw new Error("Sinkronisasi belum aktif.");
           const { data, error } = await client.functions.invoke(FN, { body });
@@ -9601,10 +9615,15 @@ $$);`;
             const wait = lastAtHome + (GAP[src] || 1000) - Date.now();
             if (wait > 0) await sleepMs(wait, signal);
             lastAtHome = Date.now();
+            if (NATIVE && NATIVE_DIRECT?.[src]) { // APK: ambil daftar gambar langsung dari situs
+              const r = await NATIVE_DIRECT[src].run({ action: "pages", source: src, chapter_id: chId });
+              return { images: (r.local || []).map((x) => ({ u: x.direct, p: "direct:" + x.direct })) };
+            }
             return call(src === "mangadex" ? { action: "pages", chapter_id: chId } : { action: "pages", source: src, chapter_id: chId });
           }
           // gambar dari Omega Scans / situs tema selalu lewat proxy server (alamatnya ditandatangani server)
           async function fetchWebImg(p, signal) {
+            if (p.startsWith("direct:")) return await nativeGet(p.slice(7), { type: "arraybuffer", signal });
             const r = await fetch(`${base()}/functions/v1/${FN}?${p}`, { signal, headers: { Authorization: "Bearer " + (await token()) } });
             if (!r.ok) { let m = `HTTP ${r.status}`; try { const j = await r.json(); if (j?.error) m = j.error; } catch {} throw new Error(m); }
             return { b: new Uint8Array(await r.arrayBuffer()), type: r.headers.get("content-type") || "" };
@@ -9673,7 +9692,13 @@ $$);`;
   <Manga>YesAndRightToLeft</Manga>
 </ComicInfo>`;
           }
-          function saveBlob(blob, name) {
+          async function saveBlob(blob, name) {
+            const FSN = NATIVE && window.Capacitor?.Plugins?.Filesystem;
+            if (FSN) { // APK: unduhan tautan tidak berjalan di WebView → tulis ke Documents/REXXA
+              const data = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1] || ""); fr.onerror = () => no(fr.error); fr.readAsDataURL(blob); });
+              await FSN.writeFile({ path: "REXXA/" + name, data, directory: "DOCUMENTS", recursive: true });
+              return;
+            }
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
             a.download = name;
@@ -9987,7 +10012,9 @@ $$);`;
             view = { m, all: null, sel: new Set(), lang: "id", dedupe: true, q: isMD(m) ? mc.dlQ || "data" : "data", fmt: mc.dlFmt || "zip", group: false, desc: mc.dlAsc ? false : true, per: [10, 20, 50].includes(mc.dlPer) ? mc.dlPer : 10, page: 1 };
             shell(m);
             try {
-              const r = await call(isMD(m) ? { action: "chapters", manga_id: m.id, langs: LANG_ALL } : { action: "chapters", source: m.source, manga_id: m.id });
+              const r = NATIVE && NATIVE_DIRECT?.[m.source]
+                ? { chapters: (await NATIVE_DIRECT[m.source].run({ action: "detail", source: m.source, manga_id: m.id })).chapters }
+                : await call(isMD(m) ? { action: "chapters", manga_id: m.id, langs: LANG_ALL } : { action: "chapters", source: m.source, manga_id: m.id });
               if (view?.m.id !== m.id) return;
               view.all = r.chapters || [];
               if (!view.all.some((c) => c.lang === "id")) view.lang = view.all.some((c) => c.lang === "en") ? "en" : "all";
@@ -10379,6 +10406,7 @@ $$);`;
             return { run, chapters: ad.chapters, mode: () => mode };
           }
           const jget = async (url, headers = {}) => {
+            if (NATIVE) return await nativeGet(url, { headers: { Accept: "application/json", ...headers } });
             const r = await fetch(url, { headers: { Accept: "application/json", ...headers }, referrerPolicy: "no-referrer", credentials: "omit" });
             if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
             return await r.json();
@@ -10497,6 +10525,7 @@ $$);`;
             };
           })());
           const DIRECT = { shinigami: SHNG, westmanga: WEST };
+          NATIVE_DIRECT = DIRECT;
           const srcCall = (body) => (DIRECT[body.source] ? DIRECT[body.source].run(body) : call(body));
           // bookmark dari sumber yang menolak server dicek dari aplikasi; hasilnya dikirim ke server → riwayat Update & push ke semua perangkat
           async function clientCheck() {
@@ -10582,7 +10611,7 @@ $$);`;
               <div class="ex-acts">
                 <button class="btn primary" data-ex="read" ${!chs?.length ? "disabled" : ""}>${icon("book")}${resume ? `Lanjut ${esc(chLabel(resume).replace(/ - .*/, ""))}` : "Mulai baca"}</button>
                 ${ex.src === "folder" ? "" : `<button class="btn ex-bmbtn ${bmOf(ex.src, m.id) ? "on" : ""}" data-ex="bm" ${bmBusy || !chs ? "disabled" : ""} aria-pressed="${bmOf(ex.src, m.id) ? "true" : "false"}">${icon(bmOf(ex.src, m.id) ? "check" : "bell")}${bmBusy ? "Menyimpan…" : bmOf(ex.src, m.id) ? "Di-bookmark" : "Bookmark"}</button>
-                ${DIRECT[ex.src] && DIRECT[ex.src].mode() === "direct" ? "" : `<button class="icon-btn ex-dlbtn" data-ex="dl" ${!chs?.length ? "disabled" : ""} title="Unduh chapter (ZIP/CBZ)" aria-label="Unduh">${icon("download")}</button>`}`}
+                ${DIRECT[ex.src] && DIRECT[ex.src].mode() === "direct" && !NATIVE ? "" : `<button class="icon-btn ex-dlbtn" data-ex="dl" ${!chs?.length ? "disabled" : ""} title="Unduh chapter (ZIP/CBZ)" aria-label="Unduh">${icon("download")}</button>`}`}
               </div>
               ${bmOf(ex.src, m.id) ? `<div class="ex-bmnote">${icon("bell")}<span>${bmOf(ex.src, m.id).notify === false ? "Notifikasi dibisukan untuk judul ini (atur di tab Diikuti)" : "Notifikasi chapter baru aktif · dicek tiap jam"}</span></div>` : ""}
               ${d.err ? `<div class="err">${esc(d.err)}</div>` : ""}
@@ -17457,7 +17486,8 @@ where t.kind = 'chat' and not t.deleted
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
       if (
         "serviceWorker" in navigator &&
-        location.protocol.startsWith("http")
+        location.protocol.startsWith("http") &&
+        !window.Capacitor?.isNativePlatform?.() // APK: berkas sudah dibundel, service worker tidak diperlukan
       ) {
         addEventListener("load", () =>
           navigator.serviceWorker

@@ -94,3 +94,19 @@ Tab **Jelajah → Folder HP**: pilih folder atau file. Semua dibaca di perangkat
 - Halaman dimuat saat mendekati layar, jadi strip yang sangat panjang tetap ringan.
 - Setelah aplikasi ditutup, pilih ulang foldernya (batasan browser); posisi baca tetap tersimpan.
 - Kalau **Pilih folder** tidak tersedia di HP, pakai **Pilih file** lalu tandai semua gambar satu chapter, atau pilih file CBZ/ZIP.
+
+## Aplikasi Android (APK)
+
+WestManga menolak dua jalur sekaligus: server Supabase diblokir Cloudflare, dan browser HP diblokir CORS. Versi APK mengirim permintaan lewat jaringan HP secara langsung (HTTP native Capacitor), jadi kedua blokir itu terlewati. Bonus: unduhan ZIP/CBZ untuk Shinigami dan WestManga ikut aktif.
+
+**Cara memasang**
+1. Buka https://github.com/Rexxaply/rexxa-ai-chat/releases/tag/apk-terbaru dari HP.
+2. Unduh `rexxa-ai.apk`, lalu buka. Izinkan "Pasang aplikasi dari sumber ini" jika diminta.
+3. Masuk dengan akun yang sama seperti di web; riwayat, bookmark, dan obrolan ikut tersinkron lewat Supabase.
+
+**Pembaruan**: setiap perubahan di `main` otomatis membangun APK baru (workflow `.github/workflows/apk.yml`, sekitar 5–8 menit). Unduh lagi lalu pasang menimpa versi lama, data tidak hilang. Build manual: tab Actions → Build APK → Run workflow.
+
+**Perbedaan dengan versi web**
+- Unduhan manga tersimpan di folder `Documents/REXXA` di HP.
+- Notifikasi push (Web Push) tidak berjalan di dalam APK. Cek update untuk Shinigami/WestManga tetap jalan saat aplikasi dibuka. Untuk notifikasi pop-up, tetap pasang juga versi web (PWA) dan aktifkan notifikasinya di sana.
+- APK ditandatangani kunci debug (`apk/rexxa-debug.keystore`) yang ada di repo, supaya update bisa menimpa versi lama. Hanya pasang APK dari Release repo ini.

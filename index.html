@@ -9081,9 +9081,20 @@ Setelah itu jawab singkat: ringkas event-nya dan katakan bahwa pengguna perlu me
         const b64bytes = (s) => { const bin = atob(String(s || "")); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
         async function nativeGet(url, { headers = {}, type = "json", signal } = {}) {
           if (signal?.aborted) throw new DOMException("dibatalkan", "AbortError");
-          const r = await window.Capacitor.Plugins.CapacitorHttp.request({ url, method: "GET", headers, responseType: type, connectTimeout: 15000, readTimeout: 30000 });
+          // tiru permintaan XHR dari situs aslinya: UA Chrome biasa (tanpa penanda WebView), Referer situs, header Sec-Fetch
+          const org = new URL(url).origin;
+          const ua = navigator.userAgent.replace(/; wv\)/, ")").replace(/ Version\/[\d.]+/, "");
+          const base = type === "json"
+            ? { "User-Agent": ua, Accept: "application/json, text/plain, */*", "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7", Referer: org + "/", "Sec-Fetch-Dest": "empty", "Sec-Fetch-Mode": "cors", "Sec-Fetch-Site": "same-origin" }
+            : { "User-Agent": ua, Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8", "Accept-Language": "id-ID,id;q=0.9,en;q=0.7", "Sec-Fetch-Dest": "image", "Sec-Fetch-Mode": "no-cors", "Sec-Fetch-Site": "cross-site" };
+          const r = await window.Capacitor.Plugins.CapacitorHttp.request({ url, method: "GET", headers: { ...base, ...headers }, responseType: type, connectTimeout: 15000, readTimeout: 30000 });
           if (signal?.aborted) throw new DOMException("dibatalkan", "AbortError");
-          if (r.status < 200 || r.status >= 300) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
+          if (r.status < 200 || r.status >= 300) {
+            const txt = typeof r.data === "string" ? r.data : JSON.stringify(r.data || "");
+            const cf = /Just a moment|cf-chl|challenge-platform|Attention Required|cf_chl/i.test(txt);
+            const msg = cf ? "tantangan Cloudflare" : (r.data && typeof r.data === "object" && (r.data.message || r.data.error)) || txt.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+            throw Object.assign(new Error(`HTTP ${r.status}${msg ? " (" + msg + ")" : ""}`), { status: r.status, cf });
+          }
           const h = Object.fromEntries(Object.entries(r.headers || {}).map(([k, v]) => [k.toLowerCase(), String(v)]));
           if (type === "json") return typeof r.data === "string" ? JSON.parse(r.data) : r.data;
           const b = typeof r.data === "string" ? b64bytes(r.data) : new Uint8Array(r.data || []);
@@ -9676,13 +9687,17 @@ $$);`;
             lastAtHome = Date.now();
             if (NATIVE && NATIVE_DIRECT?.[src]) { // APK: ambil daftar gambar langsung dari situs
               const r = await NATIVE_DIRECT[src].run({ action: "pages", source: src, chapter_id: chId });
-              return { images: (r.local || []).map((x) => ({ u: x.direct, p: "direct:" + x.direct })) };
+              return { images: (r.local || []).map((x) => ({ u: x.direct, p: "direct:" + src + "|" + x.direct })) };
             }
             return call(src === "mangadex" ? { action: "pages", chapter_id: chId } : { action: "pages", source: src, chapter_id: chId });
           }
           // gambar dari Omega Scans / situs tema selalu lewat proxy server (alamatnya ditandatangani server)
           async function fetchWebImg(p, signal) {
-            if (p.startsWith("direct:")) return await nativeGet(p.slice(7), { type: "arraybuffer", signal });
+            if (p.startsWith("direct:")) {
+              const [src, url] = [p.slice(7, p.indexOf("|")), p.slice(p.indexOf("|") + 1)];
+              const ref = { westmanga: "https://v1.westmanga.my/", shinigami: "https://id.shinigami.asia/" }[src];
+              return await nativeGet(url, { type: "arraybuffer", signal, headers: ref ? { Referer: ref } : {} });
+            }
             const r = await fetch(`${base()}/functions/v1/${FN}?${p}`, { signal, headers: { Authorization: "Bearer " + (await token()) } });
             if (!r.ok) { let m = `HTTP ${r.status}`; try { const j = await r.json(); if (j?.error) m = j.error; } catch {} throw new Error(m); }
             return { b: new Uint8Array(await r.arrayBuffer()), type: r.headers.get("content-type") || "" };

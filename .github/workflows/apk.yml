@@ -1,5 +1,13 @@
 # Membangun APK REXXA AI (Capacitor) setiap ada perubahan di main, atau manual dari tab Actions.
 # Hasil: GitHub Release "apk-terbaru" berisi rexxa-ai.apk (bisa diunduh langsung dari HP).
+#
+# Dipakai di repo fork (APK sendiri dengan Firebase sendiri)? Atur di Settings → Secrets and variables → Actions:
+#   Variables: APP_ID   (mis. com.namamu.rexxa, harus sama dengan package di Firebase)
+#              APP_NAME (nama di layar HP, mis. "REXXA Budi")
+#   Secrets:   GOOGLE_SERVICES_JSON  (isi file google-services.json dari Firebase-mu)
+#              APK_KEYSTORE_B64 + APK_KEYSTORE_PASSWORD (opsional: kunci tanda tangan sendiri, base64)
+# Tanpa pengaturan di atas, APK dibangun sebagai com.rexxa.ai dengan Firebase rexxa-ai.
+# Panduan lengkap: panduan-apk-sendiri.md
 name: Build APK
 on:
   push:
@@ -13,6 +21,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: apk } }
+    env:
+      APP_ID: ${{ vars.APP_ID || 'com.rexxa.ai' }}
+      APP_NAME: ${{ vars.APP_NAME || 'REXXA AI' }}
+      GSJ: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      KS_B64: ${{ secrets.APK_KEYSTORE_B64 }}
+      KS_PASS: ${{ secrets.APK_KEYSTORE_PASSWORD }}
+      KS_ALIAS_IN: ${{ vars.APK_KEY_ALIAS }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -26,6 +41,25 @@ jobs:
           mkdir -p www
           cp ../index.html ../sw.js ../manifest.webmanifest www/
           cp -r ../icons www/
+      - name: Identitas aplikasi & file Firebase
+        run: |
+          set -e
+          echo "APP_ID=$APP_ID · APP_NAME=$APP_NAME"
+          node -e '
+            const fs = require("fs"); const c = JSON.parse(fs.readFileSync("capacitor.config.json", "utf8"));
+            c.appId = process.env.APP_ID; c.appName = process.env.APP_NAME;
+            fs.writeFileSync("capacitor.config.json", JSON.stringify(c, null, 2));'
+          if [ -n "$GSJ" ]; then printf '%s' "$GSJ" > google-services.json; echo "google-services.json dari secret GOOGLE_SERVICES_JSON"; fi
+          node -e '
+            const fs = require("fs"); let j;
+            try { j = JSON.parse(fs.readFileSync("google-services.json", "utf8")); }
+            catch (e) { console.error("::error::google-services.json tidak valid. Tempel seluruh isi file dari Firebase ke secret GOOGLE_SERVICES_JSON."); process.exit(1); }
+            const pk = (j.client || []).map((c) => c?.client_info?.android_client_info?.package_name);
+            console.log("Firebase project:", j.project_info?.project_id, "· package:", pk.join(", "));
+            if (!pk.includes(process.env.APP_ID)) {
+              console.error(`::error::Package ${process.env.APP_ID} tidak terdaftar di google-services.json (${pk.join(", ")}). Daftarkan aplikasi Android dengan package itu di Firebase, atau samakan variabel APP_ID.`);
+              process.exit(1);
+            }'
       - name: Pasang Capacitor
         run: npm install --no-audit --no-fund
       - name: Sisipkan JavaScript Capacitor ke halaman (penghubung ke plugin native)
@@ -64,15 +98,22 @@ jobs:
           grep -n "firebase\|POST_NOTIFICATIONS" $M || true
       - name: Kunci tanda tangan tetap (agar update bisa dipasang menimpa versi lama)
         run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$PWD/own.keystore"
+            { echo "KS_FILE=$PWD/own.keystore"; echo "KS_PASS_EFF=$KS_PASS"; echo "KS_ALIAS=${KS_ALIAS_IN:-rexxa}"; echo "KS_DEFAULT=0"; } >> "$GITHUB_ENV"
+            echo "Memakai kunci dari secret APK_KEYSTORE_B64"
+          else
+            { echo "KS_FILE=$PWD/rexxa-debug.keystore"; echo "KS_PASS_EFF=android"; echo "KS_ALIAS=androiddebugkey"; echo "KS_DEFAULT=1"; } >> "$GITHUB_ENV"
+          fi
           cat >> android/app/build.gradle <<'GRADLE'
 
           android {
               signingConfigs {
                   rexxa {
-                      storeFile file('../../rexxa-debug.keystore')
-                      storePassword 'android'
-                      keyAlias 'androiddebugkey'
-                      keyPassword 'android'
+                      storeFile file(System.getenv('KS_FILE'))
+                      storePassword System.getenv('KS_PASS_EFF')
+                      keyAlias System.getenv('KS_ALIAS')
+                      keyPassword System.getenv('KS_PASS_EFF')
                   }
               }
               buildTypes {
@@ -89,11 +130,11 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk ../rexxa-ai.apk
           # pastikan APK memakai kunci tetap (SHA-256 sertifikat harus sama di setiap build)
           keytool -printcert -jarfile ../rexxa-ai.apk | grep -i "SHA256:"
-          keytool -printcert -jarfile ../rexxa-ai.apk | grep -qi "BB:6C:E0:3D:7A:72:20:77"
+          if [ "$KS_DEFAULT" = "1" ]; then keytool -printcert -jarfile ../rexxa-ai.apk | grep -qi "BB:6C:E0:3D:7A:72:20:77"; fi
       - uses: actions/upload-artifact@v4
         with: { name: rexxa-ai-apk, path: apk/rexxa-ai.apk }
       - name: Terbitkan ke Release "apk-terbaru"
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
           gh release delete apk-terbaru --yes --cleanup-tag || true
-          gh release create apk-terbaru rexxa-ai.apk --title "REXXA AI APK (build ${{ github.run_number }})" --notes "Dibangun otomatis dari commit ${{ github.sha }}. Unduh rexxa-ai.apk lalu pasang di HP Android." --latest
+          gh release create apk-terbaru rexxa-ai.apk --title "$APP_NAME APK (build ${{ github.run_number }})" --notes "Dibangun otomatis dari commit ${{ github.sha }} · paket $APP_ID. Unduh rexxa-ai.apk lalu pasang di HP Android." --latest

@@ -10445,7 +10445,12 @@ $$);`;
                 base = b;
                 for (const force of [false, true]) {
                   try { const t = await token(force); return await jget(b + path, t ? { "X-WM-Visit": t } : {}); }
-                  catch (e) { last = e; if (!(e.status === 403 || e.status === 404)) break; }
+                  catch (e) {
+                    last = e;
+                    // header X-WM-Visit memicu preflight CORS; coba juga permintaan "sederhana" tanpa header khusus
+                    if (!e.status) { try { return await jget(b + path); } catch (e2) { last = e2; } break; }
+                    if (!(e.status === 403 || e.status === 404)) break;
+                  }
                 }
               }
               throw last || new Error("WestManga tidak bisa dihubungi");

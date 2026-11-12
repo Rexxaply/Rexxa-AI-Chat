@@ -6432,6 +6432,7 @@
         tombstones: {},
         events: [],
         mangaLinks: [], // riwayat link unduhan manga (disinkronkan sebagai kind "mangalink")
+        mangaReads: [], // riwayat baca manga: posisi terakhir per judul (disinkronkan sebagai kind "mangaread")
       };
 
       /* Penyimpanan lokal: IndexedDB (ratusan MB) dengan cadangan localStorage (±5 MB) */
@@ -6502,6 +6503,7 @@
         state.tombstones = state.tombstones || {};
         state.events = Array.isArray(state.events) ? state.events : [];
         state.mangaLinks = Array.isArray(state.mangaLinks) ? state.mangaLinks : [];
+        state.mangaReads = Array.isArray(state.mangaReads) ? state.mangaReads : [];
         if (!state.profiles?.length) state.profiles = defaultProfiles();
         if (!state.profiles.find((p) => p.id === state.activeProfileId))
           state.activeProfileId = state.profiles[0].id;
@@ -10136,6 +10138,45 @@ $$);`;
             else toast("Chapter itu tidak ditemukan lagi di situs sumber", true);
           }
           const prog = (src, mid) => (mc.read || {})[progKey(src, mid)] || null;
+          /* riwayat baca ikut sinkron (kind "mangaread"): mc.read = salinan cepat di perangkat (ditulis tiap scroll),
+             state.mangaReads = salinan yang dikirim ke Supabase (paling sering tiap 15 detik, langsung saat reader ditutup) */
+          const READ_MAX = 150;
+          let pushT = null, lastPush = 0;
+          function pushRead(key, now) {
+            const r = (mc.read || {})[key]; if (!r) return;
+            if (!now && Date.now() - lastPush < 15000) { clearTimeout(pushT); pushT = setTimeout(() => pushRead(key, true), 15000 - (Date.now() - lastPush)); return; }
+            clearTimeout(pushT); lastPush = Date.now();
+            const list = (state.mangaReads = state.mangaReads || []);
+            const i = list.findIndex((x) => x.id === key), item = { ...(i >= 0 ? list[i] : {}), ...r, id: key };
+            if (i >= 0) list[i] = item; else list.push(item);
+            delete state.tombstones["mangaread:" + key];
+            if (list.length > READ_MAX) list.sort((a, b) => (b.at || 0) - (a.at || 0)).splice(READ_MAX).forEach((x) => { state.tombstones["mangaread:" + x.id] = Date.now(); });
+            save();
+          }
+          function dropRead(key) {
+            delete (mc.read || {})[key]; saveMc();
+            state.mangaReads = (state.mangaReads || []).filter((x) => x.id !== key);
+            state.tombstones["mangaread:" + key] = Date.now();
+            save();
+          }
+          // gabungkan data sinkron ke salinan perangkat: yang lebih baru menang; yang dihapus di perangkat lain ikut hilang
+          function mergeReads() {
+            mc.read = mc.read || {};
+            let changed = false;
+            for (const x of state.mangaReads || []) {
+              const { id, _rev, ...r } = x, cur = mc.read[id];
+              if (!cur || (r.at || 0) > (cur.at || 0)) { mc.read[id] = r; changed = true; }
+            }
+            const tomb = (k) => state.tombstones["mangaread:" + k] || 0; // dihapus di perangkat lain SETELAH terakhir dibaca di sini
+            for (const k of Object.keys(mc.read)) if (tomb(k) > (mc.read[k]?.at || 0) && !(state.mangaReads || []).some((x) => x.id === k)) { delete mc.read[k]; changed = true; }
+            // riwayat lama yang baru ada di perangkat ini → ikut dikirim
+            const ids = new Set((state.mangaReads || []).map((x) => x.id));
+            let up = false;
+            for (const [k, r] of Object.entries(mc.read)) if (!ids.has(k) && r?.src && (r.at || 0) > tomb(k)) { state.mangaReads.push({ ...r, id: k }); delete state.tombstones["mangaread:" + k]; up = true; }
+            if (changed) saveMc();
+            if (up) save();
+            return changed;
+          }
           const isRead = (src, chId) => !!(mc.readCh || {})[src + "|" + chId];
           const chLabel = (c) => (c.ch != null && c.ch !== "" ? `Chapter ${c.ch}` : "Oneshot") + (c.title ? ` - ${c.title}` : "");
           const dateLabel = (d) => { if (!d) return ""; const t = Date.now() - new Date(d).getTime(); if (t < 36e5) return Math.max(1, Math.round(t / 6e4)) + " menit lalu"; if (t < 864e5) return Math.round(t / 36e5) + " jam lalu"; if (t < 7 * 864e5) return Math.round(t / 864e5) + " hari lalu"; return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }); };
@@ -10566,7 +10607,7 @@ $$);`;
           function histHTML() {
             const list = recent();
             if (!list.length) return `<div class="ag-empty"><div class="big">${icon("clock")}</div><b>Belum ada riwayat baca</b>Judul yang kamu baca di REXXA (Jelajah atau Folder HP) muncul di sini, lengkap dengan halaman terakhirnya.</div>`;
-            return `<div class="mg-tools"><span class="lbl">Terakhir dibaca di perangkat ini</span><span class="cnt">${list.length} judul</span><button class="mg-link" data-rh-clear="1">Hapus semua</button></div>
+            return `<div class="mg-tools"><span class="lbl">${Sync.isOn() ? "Terakhir dibaca · tersinkron di semua perangkat" : "Terakhir dibaca di perangkat ini"}</span><span class="cnt">${list.length} judul</span><button class="mg-link" data-rh-clear="1">Hapus semua</button></div>
               <div class="mg-scroll pm-list scroll">${list.slice(0, 60).map(histItem).join("")}</div>`;
           }
           // baris "Lanjut membaca" di atas Jelajah (maks. 8 judul terakhir)
@@ -10680,6 +10721,7 @@ $$);`;
             const keys = Object.keys(mc.read); // simpan maks. 150 judul terbaru
             if (keys.length > 150) keys.sort((a, b) => (mc.read[a].at || 0) - (mc.read[b].at || 0)).slice(0, keys.length - 150).forEach((k) => delete mc.read[k]);
             saveMc();
+            pushRead(progKey(R.src, R.m.id), false);
           }
           function draw() {
             const box = R.el.querySelector("#rx-pages");
@@ -10754,14 +10796,15 @@ $$);`;
             openChapter(R.chs.indexOf(nx), toEnd ? 1e9 : 0);
           }
           function close() {
-            R.restore = null; saveProg(); R.ctl?.abort(); R.io?.disconnect(); freeUrls();
+            R.restore = null; saveProg(); if (R.m) pushRead(progKey(R.src, R.m.id), true); R.ctl?.abort(); R.io?.disconnect(); freeUrls();
             R.el.hidden = true; document.body.classList.remove("rx-on");
             if (ex.det) paint();
             if (tab === "hist" || (tab === "explore" && !ex.det)) render();
           }
           // aplikasi ditutup / pindah aplikasi saat membaca: simpan posisi terakhir
-          document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && R.el && !R.el.hidden) saveProg(); });
-          addEventListener("pagehide", () => { if (R.el && !R.el.hidden) saveProg(); });
+          const flushRead = () => { if (R.el && !R.el.hidden && R.m) { saveProg(); pushRead(progKey(R.src, R.m.id), true); } };
+          document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushRead(); });
+          addEventListener("pagehide", flushRead);
           function onReaderClick(e) {
             const md = e.target.closest("[data-rd-mode]")?.dataset.rdMode;
             if (md) { R.mode = md; if (R.src === "folder") mc.rdModeLocal = { ...(mc.rdModeLocal || {}), [R.m.id]: md }; else mc.rdMode = md; saveMc(); draw(); return; }
@@ -10790,10 +10833,12 @@ $$);`;
             const rh = e.target.closest("[data-rh]")?.dataset.rh;
             if (rh) { e.preventDefault(); resume(rh); return; }
             const rd = e.target.closest("[data-rh-del]")?.dataset.rhDel;
-            if (rd) { delete mc.read[rd]; saveMc(); render(); return; }
+            if (rd) { dropRead(rd); render(); return; }
             if (e.target.closest("[data-rh-clear]")) {
-              if (!(await confirmDialog({ tone: "danger", title: "Hapus semua riwayat baca?", html: "Posisi baca semua judul di perangkat ini akan dihapus. Bookmark tidak ikut terhapus.", confirm: "Hapus" }))) return;
-              mc.read = {}; saveMc(); render(); return;
+              if (!(await confirmDialog({ tone: "danger", title: "Hapus semua riwayat baca?", html: `Posisi baca semua judul akan dihapus${Sync.isOn() ? " di semua perangkat" : ""}. Bookmark tidak ikut terhapus.`, confirm: "Hapus" }))) return;
+              Object.keys(mc.read || {}).forEach((k) => { state.tombstones["mangaread:" + k] = Date.now(); });
+              (state.mangaReads || []).forEach((x) => { state.tombstones["mangaread:" + x.id] = Date.now(); });
+              mc.read = {}; state.mangaReads = []; saveMc(); save(); render(); return;
             }
             const fb = e.target.closest("[data-exf]");
             if (fb) { const f = (follows || []).find((x) => x.manga_id === fb.dataset.exf); if (f) openSeries(f.source, webIdOf(f), f.title, f.cover); return; }
@@ -10845,7 +10890,7 @@ $$);`;
             return true;
           }
           addEventListener("hashchange", () => { if (/^#manga\/baca\//.test(location.hash)) fromHash(); });
-          return { html, histHTML, mount, read, fromHash, clientCheck: () => clientCheck().catch(() => {}), go: (n) => load(Math.max(1, n), true), busy: () => ex.busy };
+          return { html, histHTML, mergeReads, mount, read, fromHash, clientCheck: () => clientCheck().catch(() => {}), go: (n) => load(Math.max(1, n), true), busy: () => ex.busy };
         })();
 
         /* ---------- event ---------- */
@@ -10925,7 +10970,9 @@ $$);`;
           document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshData(); });
         }
         const linksSynced = () => { if ($("#mg-body .mg-url")) paintHist(); };
-        return { init, show, render, refreshData, linksSynced, __pager: pager };
+        const readsSynced = () => { if (EX.mergeReads() && currentView === "manga" && (tab === "hist" || tab === "explore") && !$(".rx-rd:not([hidden])")) render(); };
+        setTimeout(() => EX.mergeReads(), 1500); // riwayat lama di perangkat ini ikut diunggah
+        return { init, show, render, refreshData, linksSynced, readsSynced, __pager: pager };
       })();
 
 
@@ -15843,6 +15890,16 @@ where t.kind = 'chat' and not t.deleted
                 after.push(() => (cfg.sigs[k] = sg));
               }
             }
+            for (const rd of state.mangaReads || []) {
+              const k = "mangaread:" + rd.id;
+              const { _rev, ...d } = rd;
+              const sg = JSON.stringify(d);
+              if (cfg.sigs[k] !== sg) {
+                rd._rev = Math.max(now, (rd._rev || 0) + 1);
+                rows.push({ kind: "mangaread", id: rd.id, data: d, updated_at: rd._rev, deleted: false });
+                after.push(() => (cfg.sigs[k] = sg));
+              }
+            }
             for (const ln of state.mangaLinks || []) {
               const k = "mangalink:" + ln.id;
               const { _rev, ...d } = ln;
@@ -15986,7 +16043,8 @@ where t.kind = 'chat' and not t.deleted
             profChanged = false,
             metaChanged = false,
             usageChanged = false,
-            linksChanged = false;
+            linksChanged = false,
+            readsChanged = false;
           for (const r of rows) {
             const k = r.kind + ":" + r.id;
             if (r.kind === "usage") {
@@ -16023,7 +16081,9 @@ where t.kind = 'chat' and not t.deleted
                     ? (state.events = state.events || [])
                     : r.kind === "mangalink"
                       ? (state.mangaLinks = state.mangaLinks || [])
-                      : null;
+                      : r.kind === "mangaread"
+                        ? (state.mangaReads = state.mangaReads || [])
+                        : null;
             if (!list) continue;
             const idx = list.findIndex((x) => x.id === r.id);
             const local = list[idx];
@@ -16071,7 +16131,7 @@ where t.kind = 'chat' and not t.deleted
               cfg.sigs[k] =
                 r.kind === "chat"
                   ? sigChat(item)
-                  : r.kind === "event" || r.kind === "mangalink"
+                  : r.kind === "event" || r.kind === "mangalink" || r.kind === "mangaread"
                     ? JSON.stringify((({ _rev, ...x }) => x)(item))
                     : JSON.stringify(profData(item));
               if (r.kind === "chat" && r.id === state.activeChatId)
@@ -16080,6 +16140,7 @@ where t.kind = 'chat' and not t.deleted
             if (r.kind === "chat") chatsChanged = true;
             else if (r.kind === "event") evChanged = true;
             else if (r.kind === "mangalink") linksChanged = true;
+            else if (r.kind === "mangaread") readsChanged = true;
             else profChanged = true;
           }
           if (!state.profiles.length) state.profiles = defaultProfiles();
@@ -16092,6 +16153,10 @@ where t.kind = 'chat' and not t.deleted
           if (linksChanged) {
             persistNow();
             Manga.linksSynced?.();
+          }
+          if (readsChanged) {
+            persistNow();
+            Manga.readsSynced?.();
           }
           if (chatsChanged || profChanged || metaChanged || usageChanged) {
             persistNow();

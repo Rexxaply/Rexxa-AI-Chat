@@ -71,6 +71,7 @@ Tab **Jelajah** di menu Manga: pilih sumber **Shinigami**, **Komiku**, **Kiryuu*
 - Posisi baca tersimpan di perangkat (chapter, halaman, dan posisi scroll di mode Webtoon); chapter yang sudah dibaca diberi tanda.
 - **Lanjut membaca**: baris di atas tab Jelajah berisi 8 judul terakhir; ketuk untuk langsung membuka reader di halaman terakhir.
 - Tab **Riwayat**: semua judul yang pernah dibaca di perangkat ini (maks. 150), dengan chapter, halaman & progres; **Lanjut** membuka tepat di posisi terakhir. Posisi juga tersimpan bila aplikasi ditutup tanpa menutup reader. Untuk Folder HP, pilih ulang foldernya lalu tekan Lanjut lagi.
+- Riwayat baca **ikut Sinkronisasi Supabase** (jenis data `mangaread`, tanpa SQL tambahan): posisi dikirim paling sering tiap 15 detik dan langsung saat reader ditutup / aplikasi dipindah, jadi bisa lanjut di HP lain atau laptop. Hapus satu judul atau semua riwayat juga berlaku di semua perangkat.
 - **Bookmark** → judul masuk tab **Diikuti** dan ikut dicek tiap jam. Chapter baru muncul di tab **Update** dan dikirim sebagai notifikasi; ketuk notifikasinya untuk langsung membuka chapter itu di reader.
 - 🔔 di tab Diikuti untuk membisukan, 🗑 (atau tombol **Di-bookmark**) untuk menghapus bookmark.
 

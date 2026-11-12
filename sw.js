@@ -1,5 +1,5 @@
 // REXXA AI service worker – bisa dibuka offline, permintaan ke API AI tidak pernah di-cache.
-const VERSION = 'rexxa-v13-badge';
+const VERSION = 'rexxa-v14-unduh-link';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png'];
 const CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 

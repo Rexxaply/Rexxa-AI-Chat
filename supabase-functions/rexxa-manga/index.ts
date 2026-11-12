@@ -3,12 +3,13 @@
 // - Pengecekan chapter baru terjadwal (dipanggil pg_cron tiap jam)
 // - Mengirim Web Push ke perangkat pengguna
 // - Unduh chapter: daftar chapter, alamat server MangaDex@Home, dan proxy gambar cadangan
+// - Unduh dari link: MangaDex, Omega Scans, dan situs bertema MangaThemesia / Madara
 // Deploy: Supabase Dashboard → Edge Functions → Deploy a new function → Via Editor
 //         nama: rexxa-manga → tempel kode ini → Deploy → matikan "Verify JWT".
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.6.0";
+const VERSION = "1.7.0";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -554,6 +555,388 @@ function mdImgAllowed(raw: string) {
   } catch { return null; }
 }
 
+/* ---------- unduh dari link: Omega Scans & situs tema MangaThemesia / Madara ---------- */
+// Semua permintaan ke situs luar lewat sini. Gambar diberi tanda tangan HMAC supaya proxy
+// `?wimg=` hanya mau mengambil alamat yang memang dihasilkan server ini (bukan proxy terbuka).
+const WEB_UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36";
+const OS_API = "https://api.omegascans.org";
+const WEB_MAX_HTML = 6 * 1024 * 1024;   // batas ukuran halaman HTML/JSON yang dibaca
+const WEB_MAX_IMG = 30 * 1024 * 1024;   // batas ukuran satu gambar
+let osLast = 0;                          // Omega Scans: maks. ±1 permintaan API per detik
+
+const webErr = (msg: string, status = 502) => Object.assign(new Error(msg), { status });
+
+// tolak alamat lokal/privat (mencegah server dipakai mengintip jaringan internal)
+function safeUrl(raw: string): URL {
+  let u: URL;
+  try { u = new URL(String(raw).trim()); } catch { throw webErr("Link tidak valid", 400); }
+  if (u.protocol !== "https:" && u.protocol !== "http:") throw webErr("Link harus diawali http(s)://", 400);
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (u.username || u.password) throw webErr("Link tidak boleh berisi nama pengguna/sandi", 400);
+  if (!h.includes(".") || /(^|\.)(localhost|local|internal|lan|home|arpa)$/.test(h) || /^[\d.]+$/.test(h) || h.includes(":") || /(^|\.)supabase\.(co|in|net)$/.test(h))
+    throw webErr("Alamat ini tidak diizinkan", 400);
+  if (u.port && !["80", "443"].includes(u.port)) throw webErr("Port tidak diizinkan", 400);
+  u.hash = "";
+  return u;
+}
+
+async function webFetch(raw: string | URL, opt: { referer?: string; json?: boolean; method?: string; body?: BodyInit; headers?: Record<string, string>; timeout?: number } = {}) {
+  const u = safeUrl(String(raw));
+  if (u.hostname === "api.omegascans.org") { const w = osLast + 1100 - Date.now(); osLast = Date.now() + Math.max(0, w); if (w > 0) await sleep(w); }
+  const headers: Record<string, string> = {
+    "User-Agent": WEB_UA,
+    Accept: opt.json ? "application/json, text/plain, */*" : "text/html,application/xhtml+xml,*/*;q=0.8",
+    "Accept-Language": "id-ID,id;q=0.9,en;q=0.8",
+    ...(opt.referer ? { Referer: opt.referer } : {}),
+    ...(opt.headers || {}),
+  };
+  let r: Response;
+  try { r = await fetchT(u, { method: opt.method || "GET", headers, body: opt.body, redirect: "follow" }, opt.timeout || 15000); }
+  catch (e: any) { throw webErr(`${u.hostname} tidak bisa dihubungi (${e.message})`); }
+  if (r.url) safeUrl(r.url); // pengalihan ke alamat lokal juga ditolak
+  const len = Number(r.headers.get("content-length") || 0);
+  if (len > WEB_MAX_HTML) throw webErr("Halaman terlalu besar");
+  const text = await r.text();
+  if (text.length > WEB_MAX_HTML) throw webErr("Halaman terlalu besar");
+  if (!r.ok) {
+    if ((r.status === 403 || r.status === 503) && /cloudflare|cf-ray|just a moment|challenge-platform/i.test(text + (r.headers.get("server") || "")))
+      throw webErr(`${u.hostname} dilindungi Cloudflare dan menolak server. Coba lagi nanti atau pakai sumber lain.`, 403);
+    if (r.status === 404) throw webErr("Halaman tidak ditemukan (404). Periksa lagi link-nya.", 404);
+    throw webErr(`${u.hostname} membalas HTTP ${r.status}`, r.status === 429 ? 429 : 502);
+  }
+  if (/<title>\s*Just a moment/i.test(text)) throw webErr(`${u.hostname} dilindungi Cloudflare dan menolak server. Coba lagi nanti.`, 403);
+  return { text, url: r.url || u.href, json: () => { try { return JSON.parse(text); } catch { throw webErr("Balasan server bukan JSON"); } } };
+}
+
+/* --- tanda tangan URL gambar --- */
+let hmacKey: CryptoKey | null = null;
+async function hmac(s: string) {
+  if (!hmacKey) hmacKey = await crypto.subtle.importKey("raw", new TextEncoder().encode("rexxa-wimg:" + (SERVICE_KEY || "dev")), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", hmacKey, new TextEncoder().encode(s)));
+  return btoa(String.fromCharCode(...sig.slice(0, 18))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+// cover = sampul untuk tag <img> (tanpa header login); halaman chapter tetap wajib login
+async function signImg(u: string, ref: string, cover = false) {
+  return `wimg=${encodeURIComponent(u)}&ref=${encodeURIComponent(ref)}${cover ? "&c=1" : ""}&sig=${await hmac((cover ? "c:" : "") + u + "\n" + ref)}`;
+}
+const webCoverProxy = async (u: string, ref: string) => (u ? `${SUPABASE_URL}/functions/v1/rexxa-manga?${await signImg(u, ref, true)}` : "");
+async function checkImgSig(u: string, ref: string, sig: string, cover: boolean) {
+  const want = await hmac((cover ? "c:" : "") + u + "\n" + ref);
+  if (want.length !== sig.length) return false;
+  let d = 0;
+  for (let i = 0; i < want.length; i++) d |= want.charCodeAt(i) ^ sig.charCodeAt(i);
+  return d === 0;
+}
+
+/* --- bantuan HTML ringan (tanpa library DOM) --- */
+const decodeEnt = (s: string) => s.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+  .replace(/&quot;/g, '"').replace(/&#039;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+const stripTags = (s: string) => decodeEnt(s.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+function attr(tag: string, name: string) {
+  const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "i"));
+  return m ? decodeEnt((m[1] ?? m[2] ?? m[3] ?? "").trim()) : null;
+}
+const abs = (u: string | null, base: string) => { if (!u) return ""; try { return new URL(u.trim(), base).href; } catch { return ""; } };
+function imgSrc(tag: string, base: string) {
+  for (const a of ["data-lazy-src", "data-src", "data-cfsrc", "data-original", "src"]) {
+    const v = attr(tag, a);
+    if (v && !/^data:/i.test(v) && !/\.(svg|gif)(\?|$)/i.test(v)) return abs(v, base);
+  }
+  return "";
+}
+// ambil isi elemen pertama yang cocok dengan pola pembuka, lengkap dengan elemen bertingkat di dalamnya
+function block(html: string, openRe: RegExp): string {
+  const m = openRe.exec(html);
+  if (!m) return "";
+  const tag = (m[0].match(/^<(\w+)/) || [])[1]?.toLowerCase() || "div";
+  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, "gi");
+  re.lastIndex = m.index + m[0].length;
+  let depth = 1, x: RegExpExecArray | null;
+  while ((x = re.exec(html))) {
+    depth += x[1] ? -1 : 1;
+    if (!depth) return html.slice(m.index, x.index + x[0].length);
+  }
+  return html.slice(m.index);
+}
+function metaContent(html: string, prop: string) {
+  const t = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]*>`, "i"))?.[0];
+  return t ? attr(t, "content") || "" : "";
+}
+function pageLang(html: string) {
+  const l = (html.match(/<html[^>]*\slang=["']?([a-z]{2})/i)?.[1] || "").toLowerCase();
+  return l || "en";
+}
+// judul chapter setelah nomor: "Chapter 1 - Awal" → "Awal"
+const chTitleFrom = (name: string) => (name.match(/^\s*(?:chapter|chap|ch\.?|bab|episode|ep\.?)?\s*[\d.,]+\s*[-–:]\s*(.+)$/i)?.[1] || "").trim();
+// "Chapter 12.5", "Ch. 7", "Bab 3", "Episode 40" → "12.5"
+function chNumFrom(name: string, url = ""): string | null {
+  const m = name.match(/(?:chapter|chap|ch\.?|bab|episode|ep\.?|chapitre|cap[ií]tulo|cap\.?)\s*[-:#]?\s*(\d+(?:[.,]\d+)?)/i)
+    || url.match(/(?:chapter|ch|bab|episode|ep)[-_]?(\d+(?:[-.]\d+)?)\/?$/i)
+    || name.match(/(\d+(?:\.\d+)?)/);
+  return m ? m[1].replace(/[,-]/, ".").replace(/^0+(?=\d)/, "") : null;
+}
+const MONTHS: Record<string, number> = { jan: 0, januari: 0, january: 0, feb: 1, februari: 1, february: 1, mar: 2, maret: 2, march: 2, apr: 3, april: 3, mei: 4, may: 4, jun: 5, juni: 5, june: 5, jul: 6, juli: 6, july: 6, agu: 7, agt: 7, agustus: 7, aug: 7, august: 7, sep: 8, sept: 8, september: 8, okt: 9, oktober: 9, oct: 9, october: 9, nov: 10, november: 10, des: 11, desember: 11, dec: 11, december: 11 };
+function parseWebDate(s: string | null | undefined): string | null {
+  const t = String(s || "").trim().toLowerCase();
+  if (!t) return null;
+  const rel = t.match(/(\d+)\s*(detik|second|sec|menit|minute|minggu|min|jam|hour|hari|day|week|bulan|month|tahun|year)/);
+  if (rel) {
+    const unit: Record<string, number> = { detik: 1e3, second: 1e3, sec: 1e3, menit: 6e4, minute: 6e4, min: 6e4, jam: 36e5, hour: 36e5, hari: 864e5, day: 864e5, minggu: 6048e5, week: 6048e5, bulan: 2592e6, month: 2592e6, tahun: 31536e6, year: 31536e6 };
+    return new Date(Date.now() - +rel[1] * unit[rel[2]]).toISOString();
+  }
+  if (/kemarin|yesterday/.test(t)) return new Date(Date.now() - 864e5).toISOString();
+  const d1 = t.match(/([a-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})/) , d2 = t.match(/(\d{1,2})\s+([a-z]+)\.?,?\s+(\d{4})/);
+  if (d1 && d1[1] in MONTHS) return new Date(Date.UTC(+d1[3], MONTHS[d1[1]], +d1[2])).toISOString();
+  if (d2 && d2[2] in MONTHS) return new Date(Date.UTC(+d2[3], MONTHS[d2[2]], +d2[1])).toISOString();
+  const p = Date.parse(t);
+  return isNaN(p) ? null : new Date(p).toISOString();
+}
+
+/* --- Omega Scans (HeanCMS: API JSON resmi) --- */
+async function osSeries(slug: string) {
+  const s = (await webFetch(`${OS_API}/series/${encodeURIComponent(slug)}`, { json: true, referer: "https://omegascans.org/" })).json();
+  if (!s?.id) throw webErr("Seri Omega Scans tidak ditemukan", 404);
+  const thumb = String(s.thumbnail || "");
+  return { id: String(s.id), slug: s.series_slug || slug, title: String(s.title || slug), cover: thumb ? abs(thumb, "https://media.omegascans.org/") : "" };
+}
+async function osChapters(slug: string) {
+  const s = await osSeries(slug);
+  const out: any[] = [];
+  for (let page = 1; page <= 30; page++) {
+    const j = (await webFetch(`${OS_API}/chapter/query?page=${page}&perPage=500&series_id=${encodeURIComponent(s.id)}`, { json: true, referer: "https://omegascans.org/" })).json();
+    for (const c of j.data || []) {
+      const at = c.created_at ? new Date(c.created_at).toISOString() : null;
+      if (at && Date.parse(at) > Date.now() + 6e4) continue; // dijadwalkan, belum terbit
+      const name = String(c.chapter_name || "").trim();
+      out.push({
+        id: `${s.slug}/${c.chapter_slug}`, ch: chNumFrom(name, c.chapter_slug), vol: null, title: String(c.chapter_title || "").trim(),
+        lang: "en", pages: null, group: "Omega Scans", at, locked: Number(c.price || 0) > 0, url: `https://omegascans.org/series/${s.slug}/${c.chapter_slug}`,
+      });
+    }
+    if (!j.meta || j.meta.current_page >= j.meta.last_page) break;
+  }
+  return { series: s, chapters: out };
+}
+async function osPages(id: string) {
+  const [slug, ch] = id.split("/");
+  if (!slug || !ch) throw webErr("ID chapter Omega Scans tidak valid", 400);
+  const j = (await webFetch(`${OS_API}/chapter/${encodeURIComponent(slug)}/${encodeURIComponent(ch)}`, { json: true, referer: "https://omegascans.org/" })).json();
+  const imgs: string[] = j?.chapter?.chapter_data?.images || [];
+  if (!imgs.length) throw webErr(j?.paywall ? "Chapter ini berbayar (Premium) dan tidak bisa diunduh." : "Chapter tidak berisi gambar", j?.paywall ? 402 : 502);
+  return { ref: `https://omegascans.org/series/${slug}/${ch}`, images: imgs.map((x) => abs(x, "https://media.omegascans.org/")).filter(Boolean) };
+}
+
+/* --- tema WordPress: MangaThemesia & Madara --- */
+type Theme = "themesia" | "madara";
+function detectTheme(html: string): Theme | null {
+  if (/ts_reader\.run|id=["']chapterlist["']|class=["'][^"']*\beplister\b|dHNfcmVhZGVyLnJ1bih7/.test(html)) return "themesia";
+  if (/wp-manga-chapter|manga-chapters-holder|class=["'][^"']*\breading-content\b|wp-manga|madara/i.test(html)) return "madara";
+  return null;
+}
+const isChapterPage = (html: string, theme: Theme) =>
+  theme === "themesia" ? /ts_reader\.run|dHNfcmVhZGVyLnJ1bih7|id=["']readerarea["']/.test(html) : /class=["'][^"']*\breading-content\b|chapter-protector-data/.test(html);
+
+function seriesTitle(html: string) {
+  const h1 = html.match(/<h1[^>]*class=["'][^"']*\b(?:entry-title|post-title)\b[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i)?.[1]
+    || block(html, /<div[^>]*class=["'][^"']*\bpost-title\b[^"']*["'][^>]*>/i).match(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/i)?.[1];
+  return stripTags(h1 || metaContent(html, "og:title") || html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || "").replace(/\s*[-–|].*$/, "").trim() || "Manga";
+}
+function seriesCover(html: string, base: string) {
+  const area = block(html, /<div[^>]*class=["'][^"']*\b(?:thumb|summary_image|infomanga)\b[^"']*["'][^>]*>/i);
+  const tag = area.match(/<img\b[^>]*>/i)?.[0];
+  return (tag && imgSrc(tag, base)) || abs(metaContent(html, "og:image"), base);
+}
+// dari halaman chapter, cari link ke halaman seri
+function seriesLinkFromChapter(html: string, url: string, theme: Theme): string {
+  if (theme === "madara") {
+    const bc = block(html, /<ol[^>]*class=["'][^"']*\bbreadcrumb\b[^"']*["'][^>]*>/i);
+    const links = [...bc.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)].map((m) => abs(m[1], url));
+    if (links.length >= 2) return links[links.length - 1];
+    const u = new URL(url); const p = u.pathname.replace(/\/+$/, "").split("/"); p.pop(); u.pathname = p.join("/") + "/"; u.search = "";
+    return u.href;
+  }
+  const allc = block(html, /<div[^>]*class=["'][^"']*\ballc\b[^"']*["'][^>]*>/i).match(/href=["']([^"']+)["']/i)?.[1];
+  if (allc) return abs(allc, url);
+  const bc = [...html.matchAll(/<a[^>]*itemprop=["']item["'][^>]*href=["']([^"']+)["']|<a[^>]*href=["']([^"']+)["'][^>]*itemprop=["']item["']/gi)].map((m) => abs(m[1] || m[2], url));
+  if (bc.length >= 2) return bc[1];
+  const ts = themesiaReader(html);
+  if (ts?.series) return abs(ts.series, url);
+  throw webErr("Tidak menemukan halaman seri dari link chapter ini. Coba tempel link halaman judulnya.", 422);
+}
+function themesiaReader(html: string): any {
+  let src = html;
+  const b64 = html.match(/src=["']data:text\/javascript;base64,(dHNfcmVhZGVyLnJ1bih7[^"']+)["']/i)?.[1];
+  if (b64) { try { src = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))); } catch {} }
+  const at = src.indexOf("ts_reader.run(");
+  if (at < 0) return null;
+  const start = src.indexOf("{", at);
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') inStr = true; else if (c === "{") depth++; else if (c === "}" && !--depth) { try { return JSON.parse(src.slice(start, i + 1)); } catch { return null; } }
+  }
+  return null;
+}
+function themesiaChapters(html: string, base: string, lang: string) {
+  const list = block(html, /<(?:div|ul)[^>]*id=["']chapterlist["'][^>]*>/i) || block(html, /<div[^>]*class=["'][^"']*\b(?:eplister|bxcl|cl)\b[^"']*["'][^>]*>/i);
+  const out: any[] = [];
+  for (const m of list.matchAll(/<li\b[^>]*>[\s\S]*?<\/li>/gi)) {
+    const li = m[0];
+    const href = li.match(/<a\b[^>]*href=["']([^"']+)["']/i)?.[1];
+    if (!href) continue;
+    const url = abs(href, base);
+    const name = stripTags(li.match(/class=["'][^"']*\b(?:chapternum|lch)\b[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div)>/i)?.[1] || li);
+    const num = attr(li.match(/<li\b[^>]*>/i)![0], "data-num");
+    out.push({
+      id: url, ch: chNumFrom(num ? "chapter " + num : name, url), vol: null, title: chTitleFrom(name), lang, pages: null, group: "",
+      at: parseWebDate(stripTags(li.match(/class=["'][^"']*\bchapterdate\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] || "")),
+      locked: /lockedChapterModal|\bpremium\b|coin/i.test(li), url,
+    });
+  }
+  return out;
+}
+function madaraChapterItems(html: string, base: string, lang: string) {
+  const out: any[] = [];
+  for (const m of html.matchAll(/<li\b[^>]*class=["'][^"']*\bwp-manga-chapter\b[^"']*["'][^>]*>[\s\S]*?<\/li>/gi)) {
+    const li = m[0];
+    const cls = attr(li.match(/<li\b[^>]*>/i)![0], "class") || "";
+    const a = li.match(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
+    if (!a) continue;
+    const url = abs(a[1], base);
+    if (!url || url.endsWith("#")) continue;
+    const name = stripTags(a[2]);
+    const dateTxt = li.match(/class=["'][^"']*\bchapter-release-date\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1];
+    const title = li.match(/<a\b[^>]*title=["']([^"']+)["'][^>]*class=["'][^"']*c-new-tag/i)?.[1];
+    out.push({
+      id: url, ch: chNumFrom(name, url), vol: null, title: chTitleFrom(name), lang, pages: null, group: "",
+      at: parseWebDate(title || (dateTxt ? stripTags(dateTxt) : "")),
+      locked: /\bpremium\b/.test(cls) && !/\bfree-chap\b/.test(cls), url,
+    });
+  }
+  return out;
+}
+async function madaraChapters(html: string, url: string, lang: string) {
+  let list = madaraChapterItems(html, url, lang);
+  if (list.length) return list;
+  const ajax = url.replace(/\/?(\?.*)?$/, "/") + "ajax/chapters/";
+  try { list = madaraChapterItems((await webFetch(ajax, { method: "POST", referer: url, headers: { "X-Requested-With": "XMLHttpRequest" } })).text, url, lang); } catch {}
+  if (list.length) return list;
+  const id = attr(html.match(/<[^>]+id=["']manga-chapters-holder["'][^>]*>/i)?.[0] || "", "data-id") || html.match(/["']manga_id["']\s*:\s*["']?(\d+)/)?.[1];
+  if (id) {
+    const origin = new URL(url).origin;
+    try {
+      list = madaraChapterItems((await webFetch(`${origin}/wp-admin/admin-ajax.php`, {
+        method: "POST", referer: url, body: new URLSearchParams({ action: "manga_get_chapters", manga: id }),
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest" },
+      })).text, url, lang);
+    } catch {}
+  }
+  return list;
+}
+function filterImgs(urls: string[]) {
+  const seen = new Set<string>();
+  return urls.filter((u) => u && /^https?:/i.test(u) && !/(logo|avatar|banner|icon|loading|placeholder|ads?[-_/])/i.test(u.split("?")[0].split("/").pop() || "") && !seen.has(u) && !!seen.add(u));
+}
+async function themePages(chUrl: string) {
+  const u = safeUrl(chUrl);
+  let page = await webFetch(u.href);
+  const theme = detectTheme(page.text);
+  if (theme === "madara") {
+    if (/chapter-protector-data/.test(page.text)) throw webErr("Situs ini mengenkripsi gambar chapter (chapter protector), belum didukung.", 422);
+    let area = block(page.text, /<div[^>]*class=["'][^"']*\breading-content\b[^"']*["'][^>]*>/i);
+    let imgs = filterImgs([...area.matchAll(/<img\b[^>]*>/gi)].map((m) => imgSrc(m[0], page.url)));
+    if (imgs.length <= 1 && !/style=list/.test(u.search)) { // mode per halaman → minta mode daftar
+      u.searchParams.set("style", "list");
+      page = await webFetch(u.href);
+      area = block(page.text, /<div[^>]*class=["'][^"']*\breading-content\b[^"']*["'][^>]*>/i);
+      imgs = filterImgs([...area.matchAll(/<img\b[^>]*>/gi)].map((m) => imgSrc(m[0], page.url)));
+    }
+    return { ref: page.url, images: imgs };
+  }
+  const ts = themesiaReader(page.text);
+  const fromTs = (ts?.sources || []).find((s: any) => s?.images?.length)?.images || [];
+  let imgs = filterImgs(fromTs.map((x: string) => abs(x, page.url)));
+  if (!imgs.length) {
+    const area = block(page.text, /<div[^>]*id=["']readerarea["'][^>]*>/i);
+    imgs = filterImgs([...area.matchAll(/<img\b[^>]*>/gi)].map((m) => imgSrc(m[0], page.url)));
+  }
+  if (!imgs.length) {
+    const j = page.text.match(/["']?(?:images|imageUrls)["']?\s*[:=]\s*(\[[^\]]*\])/)?.[1];
+    if (j) { try { imgs = filterImgs(JSON.parse(j).map((x: string) => abs(x, page.url))); } catch {} }
+  }
+  return { ref: page.url, images: imgs };
+}
+
+/* --- pintu masuk: kenali link --- */
+async function mdTitleInfo(id: string) {
+  const j = await md(`/manga/${id}`, { "includes[]": "cover_art" }, 10000);
+  const a = j?.data?.attributes || {};
+  const t = a.title?.en || a.title?.["ja-ro"] || Object.values(a.title || {})[0] || (a.altTitles || []).map((x: any) => x.en).find(Boolean) || "Manga";
+  const art = (j?.data?.relationships || []).find((r: any) => r.type === "cover_art")?.attributes?.fileName;
+  return { id, title: String(t), cover: art ? `${id}/${art}` : "" };
+}
+async function resolveLink(raw: string) {
+  const u = safeUrl(raw);
+  const host = u.hostname.replace(/^www\./, "");
+  const path = u.pathname;
+  if (host === "mangadex.org") {
+    const t = path.match(/^\/title\/([0-9a-f-]{36})/i)?.[1];
+    if (t) return { source: "mangadex", manga: await mdTitleInfo(t), chapter: null };
+    const c = path.match(/^\/chapter\/([0-9a-f-]{36})/i)?.[1];
+    if (c) {
+      const j = await md(`/chapter/${c}`, {}, 10000);
+      const mid = (j?.data?.relationships || []).find((r: any) => r.type === "manga")?.id;
+      if (!mid) throw webErr("Chapter MangaDex tidak ditemukan", 404);
+      if (j.data.attributes?.externalUrl) throw webErr("Chapter ini hanya tautan ke situs resmi luar, tidak bisa diunduh.", 422);
+      return { source: "mangadex", manga: await mdTitleInfo(mid), chapter: c };
+    }
+    throw webErr("Link MangaDex harus berupa halaman judul (/title/…) atau chapter (/chapter/…)", 400);
+  }
+  if (host === "omegascans.org") {
+    const m = path.match(/^\/series\/([^/]+)(?:\/([^/]+))?/);
+    if (!m) throw webErr("Link Omega Scans harus berupa halaman seri (/series/…) atau chapter-nya", 400);
+    const s = await osSeries(decodeURIComponent(m[1]));
+    return { source: "omegascans", manga: { id: s.slug, title: s.title, cover: await webCoverProxy(s.cover, "https://omegascans.org/") }, chapter: m[2] ? `${s.slug}/${decodeURIComponent(m[2])}` : null };
+  }
+  // situs lain: kenali tema WordPress-nya
+  let page = await webFetch(u.href);
+  const theme = detectTheme(page.text);
+  if (!theme) throw webErr(`Situs ${host} belum didukung. Yang bisa: MangaDex, Omega Scans, dan situs bertema MangaThemesia/Madara.`, 422);
+  let chapter: string | null = null;
+  if (isChapterPage(page.text, theme)) {
+    chapter = page.url;
+    page = await webFetch(seriesLinkFromChapter(page.text, page.url, theme), { referer: chapter });
+  }
+  return { source: theme, manga: { id: page.url, title: seriesTitle(page.text), cover: await webCoverProxy(seriesCover(page.text, page.url), page.url) }, chapter };
+}
+async function webChapters(source: string, id: string) {
+  if (source === "omegascans") return (await osChapters(id)).chapters;
+  const page = await webFetch(id);
+  const lang = pageLang(page.text);
+  const list = source === "madara" ? await madaraChapters(page.text, page.url, lang) : themesiaChapters(page.text, page.url, lang);
+  if (!list.length) throw webErr("Daftar chapter tidak ditemukan di halaman ini. Struktur situsnya mungkin berbeda.", 422);
+  return list;
+}
+async function webPages(source: string, id: string) {
+  const r = source === "omegascans" ? await osPages(id) : await themePages(id);
+  if (!r.images.length) throw webErr("Tidak menemukan gambar di chapter ini. Mungkin chapter terkunci atau situsnya memakai cara lain memuat gambar.", 422);
+  return { ref: r.ref, images: await Promise.all(r.images.map(async (u) => ({ u, p: await signImg(u, r.ref) }))) };
+}
+async function webImage(u: string, ref: string, sig: string, cover: boolean, needAuth: () => Promise<boolean>) {
+  if (!u || !sig || !(await checkImgSig(u, ref, sig, cover))) return json({ error: "tanda tangan gambar tidak valid" }, 403);
+  if (!cover && !(await needAuth())) return json({ error: "Belum masuk ke akun sinkron REXXA." }, 401);
+  let url: URL;
+  try { url = safeUrl(u); } catch (e: any) { return json({ error: e.message }, 400); }
+  const r = await fetchT(url, { headers: { "User-Agent": WEB_UA, Accept: "image/avif,image/webp,image/*,*/*;q=0.8", ...(ref ? { Referer: ref } : {}) }, redirect: "follow" }, 25000).catch(() => null);
+  if (!r || !r.ok) return json({ error: `gagal memuat gambar${r ? " (" + r.status + ")" : ""}` }, 502);
+  const type = r.headers.get("Content-Type") || "";
+  if (!/^image\//i.test(type) && !/octet-stream/i.test(type)) return json({ error: "bukan file gambar" }, 415);
+  const buf = await r.arrayBuffer();
+  if (buf.byteLength > WEB_MAX_IMG) return json({ error: "gambar terlalu besar" }, 413);
+  return new Response(buf, { status: 200, headers: { ...CORS, "Content-Type": type || "image/jpeg", "Cache-Control": cover ? "public, max-age=604800" : "private, max-age=86400" } });
+}
+
 /* ---------- router ---------- */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -591,6 +974,15 @@ Deno.serve(async (req) => {
       const buf = await r.arrayBuffer();
       mdReport(iu.href, true, buf.byteLength, Date.now() - t0, r.headers.get("X-Cache") === "HIT");
       return new Response(buf, { status: 200, headers: { ...CORS, "Content-Type": r.headers.get("Content-Type") || "image/jpeg", "Cache-Control": "private, max-age=86400" } });
+    }
+    // proxy gambar dari link (Omega Scans / situs tema): hanya alamat yang ditandatangani server ini
+    const wimg = url.searchParams.get("wimg");
+    if (req.method === "GET" && wimg) {
+      return await webImage(wimg, url.searchParams.get("ref") || "", url.searchParams.get("sig") || "", url.searchParams.get("c") === "1", async () => {
+        const tk = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+        const { data: uu } = await admin.auth.getUser(tk);
+        return !!uu?.user;
+      });
     }
     if (req.method === "GET") return json({ ok: true, name: "rexxa-manga", version: VERSION });
 
@@ -694,6 +1086,18 @@ Deno.serve(async (req) => {
       if (error) throw error;
       return json({ ok: true, mu_id: id, mu_match: "confirmed" });
     }
+    if (action === "resolve") {
+      const r = await resolveLink(String(body.url || "").slice(0, 2000));
+      return json({ ok: true, ...r });
+    }
+    if ((action === "chapters" || action === "pages") && body.source && body.source !== "mangadex") {
+      const src = String(body.source);
+      if (!["omegascans", "themesia", "madara"].includes(src)) return json({ error: "sumber tidak dikenal" }, 400);
+      try {
+        if (action === "chapters") return json({ ok: true, chapters: await webChapters(src, String(body.manga_id || "").slice(0, 2000)) });
+        return json({ ok: true, ...(await webPages(src, String(body.chapter_id || "").slice(0, 2000))) });
+      } catch (e: any) { return json({ error: e?.message || String(e) }, e?.status || 502); }
+    }
     if (action === "chapters") {
       const id = String(body.manga_id || "");
       if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: "ID manga tidak valid" }, 400);
@@ -716,6 +1120,6 @@ Deno.serve(async (req) => {
     return json({ error: "action tidak dikenal" }, 400);
   } catch (e: any) {
     console.error(e);
-    return json({ error: e?.message || String(e) }, 500);
+    return json({ error: e?.message || String(e) }, e?.status && e.status >= 400 && e.status < 600 ? e.status : 500);
   }
 });

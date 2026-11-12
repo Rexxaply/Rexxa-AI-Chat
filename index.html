@@ -2368,6 +2368,48 @@
       .mdl-note { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); padding: 8px 10px; border-radius: 10px; background: var(--surface-2); flex: none; }
       .mdl-note svg.i { flex: none; width: 15px; height: 15px; margin-top: 1px; }
       .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+      /* riwayat link */
+      .mg-url .row .btn.hist { position: relative; background: var(--surface); border: 1px solid var(--line-2); color: var(--text); padding: 8px 10px; }
+      .mg-url .row .btn.hist.on { border-color: var(--purple); color: #fdba74; }
+      .mg-url .row .btn.hist .n { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--purple-2, #ea580c); color: #fff; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+      .mg-hist { margin-top: 10px; border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; background: var(--surface-2); }
+      .mg-hist .hh { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--line); }
+      .mg-hist .hh svg.i { width: 16px; height: 16px; }
+      .mg-hist .hh b { flex: 1; }
+      .mg-hist .hh .mg-link { font-size: 12.5px; color: var(--danger, #ef4444); }
+      .mg-hist .hl { max-height: min(420px, 55vh); overflow: auto; overscroll-behavior: contain; }
+      .mg-hist .hi { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 6px 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+      .mg-hist .hi:last-child { border-bottom: 0; }
+      .mg-hist .hi:hover { background: rgba(255, 255, 255, 0.03); }
+      .mg-hist .hi .mg-cv { width: 40px; height: 54px; border-radius: 7px; object-fit: cover; }
+      .mg-hist .t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+      .mg-hist .t b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mg-hist .t .u { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mg-hist .t .m { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+      .mg-hist .t .m .src-b { margin: 0; }
+      .mg-hist .del { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); }
+      .mg-hist .del:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+      .mg-hist .del svg.i { width: 17px; height: 17px; }
+      .mg-hist .hf { padding: 8px 12px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); }
+      .mg-hist .emp { padding: 18px 12px; font-size: 13px; color: var(--muted); text-align: center; }
+      .mdl-it .dn { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 600; color: #22c55e; flex: none; }
+      .mdl-it .dn svg.i { width: 12px; height: 12px; }
+      /* simpan ke folder */
+      .mdl-opts > .mdl-save { flex-basis: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; }
+      .mdl-save .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .mdl-dir { display: flex; align-items: center; gap: 10px; padding: 9px 10px 9px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line-2); min-width: 0; }
+      .mdl-dir .fi { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: rgba(234, 88, 12, 0.14); color: #fdba74; flex: none; }
+      .mdl-dir .fi svg.i { width: 17px; height: 17px; }
+      .mdl-dir .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+      .mdl-dir .nm b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mdl-dir .nm small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .mdl-dir .btn { flex: none; padding: 6px 12px; font-size: 13px; }
+      .mdl-dir.warn { border-color: rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.07); }
+      .mdl-dir.warn .fi { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+      .mdl-save .mg-chk { font-size: 13px; margin: 0; }
+      .mdl-save .hint { font-size: 12px; color: var(--muted); }
+      .mdl-ok { flex-basis: 100%; display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: #22c55e; background: rgba(34, 197, 94, 0.08); border-radius: 10px; padding: 8px 10px; }
+      .mdl-ok svg.i { width: 16px; height: 16px; flex: none; margin-top: 1px; }
       .mdl-prog small { color: var(--muted); }
       .mdl-pill { position: fixed; left: 14px; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 90; display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line-2); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); color: var(--text); font: inherit; text-align: left; overflow: hidden; }
       .mdl-pill::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--p, 0%); background: var(--grad-purple, #ea580c); transition: width 0.3s; }
@@ -6284,6 +6326,7 @@
         remoteUsage: {},
         tombstones: {},
         events: [],
+        mangaLinks: [], // riwayat link unduhan manga (disinkronkan sebagai kind "mangalink")
       };
 
       /* Penyimpanan lokal: IndexedDB (ratusan MB) dengan cadangan localStorage (±5 MB) */
@@ -6353,6 +6396,7 @@
         state.remoteUsage = state.remoteUsage || {};
         state.tombstones = state.tombstones || {};
         state.events = Array.isArray(state.events) ? state.events : [];
+        state.mangaLinks = Array.isArray(state.mangaLinks) ? state.mangaLinks : [];
         if (!state.profiles?.length) state.profiles = defaultProfiles();
         if (!state.profiles.find((p) => p.id === state.activeProfileId))
           state.activeProfileId = state.profiles[0].id;
@@ -9222,7 +9266,67 @@ $$);`;
           themesia: { name: "Situs MangaThemesia", cls: "web" },
           madara: { name: "Situs Madara", cls: "web" },
         };
-        let linkVal = mc.lastLink || "", linkBusy = false, linkErr = "";
+        let linkVal = mc.lastLink || "", linkBusy = false, linkErr = "", histOpen = false;
+        /* ---------- riwayat link (maks. 30, terhapus otomatis setelah 30 hari; ikut sinkron) ---------- */
+        const H_MAX = 30, H_TTL = 30 * 864e5;
+        const Hist = {
+          list() { return (state.mangaLinks || []).slice().sort((a, b) => (b.at || 0) - (a.at || 0)); },
+          idOf: (source, mid) => (source || "mangadex") + ":" + mid,
+          find(m) { return (state.mangaLinks || []).find((x) => x.id === Hist.idOf(m.source, m.id)); },
+          canon(m) { return m.source === "omegascans" ? `https://omegascans.org/series/${m.id}` : m.source === "mangadex" || !m.source ? `https://mangadex.org/title/${m.id}` : m.id; },
+          drop(id) { state.mangaLinks = state.mangaLinks.filter((x) => x.id !== id); state.tombstones["mangalink:" + id] = Date.now(); },
+          prune() {
+            const now = Date.now(), keep = Hist.list();
+            keep.forEach((x, i) => { if (i >= H_MAX || now - (x.at || 0) > H_TTL) Hist.drop(x.id); });
+          },
+          // catat saat link dibuka / chapter diunduh
+          touch(m, patch = {}) {
+            const id = Hist.idOf(m.source, m.id);
+            let e = state.mangaLinks.find((x) => x.id === id);
+            if (!e) { e = { id, source: m.source || "mangadex", mid: m.id, dl: [] }; state.mangaLinks.push(e); delete state.tombstones["mangalink:" + id]; }
+            Object.assign(e, { title: m.title || e.title || "Manga", cover: m.cover || e.cover || "", url: patch.url || e.url || Hist.canon(m), at: Date.now() });
+            if ("pre" in patch) e.pre = patch.pre || null;
+            if (patch.dl?.length) { const s = new Set(e.dl || []); patch.dl.forEach((k) => s.add(k)); e.dl = [...s].slice(-3000); e.dlAt = Date.now(); }
+            Hist.prune();
+            save();
+            paintHist();
+            return e;
+          },
+          status(e) {
+            const n = (e.dl || []).map((k) => parseFloat(k.split("|")[1])).filter((x) => !isNaN(x)).sort((a, b) => a - b);
+            if (!e.dl?.length) return "Dibuka, belum diunduh";
+            if (!n.length) return `${e.dl.length} chapter diunduh`;
+            const lo = n[0], hi = n[n.length - 1];
+            return lo === hi ? `Ch. ${lo} diunduh` : `Ch. ${lo}–${hi} diunduh${n.length !== Math.round(hi - lo + 1) ? ` (${n.length} ch)` : ""}`;
+          },
+        };
+        function histHTML() {
+          if (!histOpen) return "";
+          const L = Hist.list();
+          const rel = (t) => (t ? relTime(t) : "");
+          return `<div class="mg-hist" id="mg-hist"><div class="hh">${icon("clock")}<b>Riwayat link</b>${L.length ? `<button class="mg-link" data-act="hist-clear">Hapus semua</button>` : ""}</div>
+            <div class="hl">${L.length ? L.map((e) => `<div class="hi" data-hist="${esc(e.id)}" title="Buka lagi">${img(e.cover)}<span class="t"><b>${esc(e.title)}</b><span class="m"><span class="src-b ${(SRC[e.source] || SRC.mangadex).cls}">${esc((SRC[e.source] || SRC.mangadex).name)}</span>${esc(Hist.status(e))} · ${esc(rel(e.at))}</span><span class="u">${esc(String(e.url || "").replace(/^https?:\/\/(www\.)?/, ""))}</span></span><button class="del" data-hist-del="${esc(e.id)}" title="Hapus dari riwayat" aria-label="Hapus dari riwayat">${icon("trash")}</button></div>`).join("") : `<div class="emp">Belum ada riwayat. Link yang kamu buka atau unduh akan muncul di sini.</div>`}</div>
+            <div class="hf">${Sync.isOn() ? "Ikut sinkron ke semua perangkat" : "Disimpan di perangkat ini"} · maks. ${H_MAX} link · terhapus otomatis setelah 30 hari</div></div>`;
+        }
+        function histBtn() {
+          const n = (state.mangaLinks || []).length;
+          return `<button class="btn hist${histOpen ? " on" : ""}" data-act="hist" title="Riwayat link" aria-label="Riwayat link" aria-expanded="${histOpen}">${icon("clock")}${n ? `<span class="n">${n}</span>` : ""}</button>`;
+        }
+        function paintHist() {
+          const b = $('#mg-body [data-act="hist"]');
+          if (b) b.outerHTML = histBtn();
+          const h = $("#mg-hist"), box = $("#mg-body .mg-url");
+          if (h) h.outerHTML = histHTML();
+          else if (box && histOpen) box.insertAdjacentHTML("beforeend", histHTML());
+        }
+        function openHist(id) {
+          const e = (state.mangaLinks || []).find((x) => x.id === id);
+          if (!e) return;
+          histOpen = false; paintHist();
+          // sudah pernah unduh → lanjutkan dari chapter berikutnya; belum → pilih chapter dari link (bila ada)
+          DL.open({ id: e.mid, title: e.title, cover: e.cover, source: e.source, pre: e.dl?.length ? null : e.pre || null });
+          Hist.touch({ id: e.mid, source: e.source, title: e.title, cover: e.cover });
+        }
         // tebakan cepat di browser (sebelum bertanya ke server) supaya pengguna langsung tahu link-nya dikenali
         function guessLink(v) {
           v = String(v || "").trim();
@@ -9237,7 +9341,7 @@ $$);`;
           if (h === "omegascans.org") {
             const m = p.match(/^\/series\/([^/]+)(?:\/([^/]+))?/);
             if (!m) return { bad: true, src: "omegascans" };
-            return { src: "omegascans", kind: m[2] ? "Chapter " + (m[2].match(/[\d.-]+$/)?.[0]?.replace("-", ".") || "") : "Judul", slug: decodeURIComponent(m[1]).replace(/-/g, " ") };
+            return { src: "omegascans", kind: m[2] ? "Chapter " + (m[2].match(/(\d+(?:[.-]\d+)?)\/?$/)?.[1]?.replace("-", ".") || "") : "Judul", slug: decodeURIComponent(m[1]).replace(/-/g, " ") };
           }
           return { src: "web", host: h };
         }
@@ -9253,8 +9357,9 @@ $$);`;
         function linkHTML() {
           return `<div class="mg-url">
               <div class="h">${icon("link")}Unduh dari link <span class="src-b md">MangaDex</span><span class="src-b os">Omega Scans</span><span class="src-b web" title="Situs bertema WordPress MangaThemesia atau Madara">Situs lain</span></div>
-              <div class="row">${icon("link")}<input id="mg-url" type="url" inputmode="url" enterkeyhint="go" placeholder="Tempel link judul atau chapter…" autocomplete="off" value="${esc(linkVal)}"><button class="btn primary" data-act="link" ${linkBusy ? "disabled" : ""}>${icon("download")}Buka</button></div>
+              <div class="row">${icon("link")}<input id="mg-url" type="url" inputmode="url" enterkeyhint="go" placeholder="Tempel link judul atau chapter…" autocomplete="off" value="${esc(linkVal)}">${histBtn()}<button class="btn primary" data-act="link" ${linkBusy ? "disabled" : ""}>${icon("download")}Buka</button></div>
               <div class="det" id="mg-url-det">${detHTML()}</div>
+              ${histHTML()}
             </div>`;
         }
         const paintDet = () => { const d = $("#mg-url-det"); if (d) d.innerHTML = detHTML(); const b = $('#mg-body [data-act="link"]'); if (b) b.disabled = linkBusy; };
@@ -9268,7 +9373,11 @@ $$);`;
           try {
             const r = await call({ action: "resolve", url: v });
             if (!r.manga) throw new Error("Server tidak memberi data judul");
-            DL.open({ ...r.manga, source: r.source || "mangadex", pre: r.chapter || null });
+            const m = { ...r.manga, source: r.source || "mangadex" };
+            const prev = Hist.find(m);
+            // link judul + pernah unduh → lanjutkan; link chapter → pilih chapter itu
+            DL.open({ ...m, pre: r.chapter || null });
+            Hist.touch(m, { url: v, pre: r.chapter || (prev ? prev.pre : null) });
           } catch (e) {
             linkErr = /action tidak dikenal/.test(e.message) ? `Edge Function "rexxa-manga" masih versi lama. Perbarui ke ${FN_VERSION} lewat tombol Salin kode di bagian Setup.` : e.message;
           } finally { linkBusy = false; paintDet(); }
@@ -9436,22 +9545,43 @@ $$);`;
           }
 
           async function run(m, list, opt) {
-            job = { m, src: srcOf(m), total: list.length, done: 0, pages: 0, pagesTotal: list.reduce((a, c) => a + (c.pages || 0), 0), bytes: 0, cur: "", files: 0, failed: [], ctl: new AbortController(), st: {} };
+            job = { m, src: srcOf(m), total: list.length, done: 0, pages: 0, pagesTotal: list.reduce((a, c) => a + (c.pages || 0), 0), bytes: 0, cur: "", files: 0, skipped: 0, failed: [], ctl: new AbortController(), st: {} };
             const signal = job.ctl.signal;
             const T = safe(m.title);
-            let part = [], partBytes = 0, partFirst = null, partLast = null;
-            const flush = () => {
+            let part = [], partBytes = 0, partFirst = null, partKeys = [], partLast = null, tdir = null;
+            const where = opt.dir ? `${opt.dir.name}${opt.sub ? "/" + T : ""}` : "folder Unduhan";
+            const fsErr = (e) => {
+              if (e.name === "NotFoundError") { dirH = undefined; return new Error("Folder tujuan tidak ditemukan (dipindah/dihapus). Pilih ulang folder."); }
+              if (e.name === "QuotaExceededError") return new Error("Penyimpanan perangkat penuh");
+              if (e.name === "NotAllowedError" || e.name === "SecurityError") return new Error("Izin menulis ke folder dicabut. Beri izin lagi atau pilih folder lain.");
+              return e;
+            };
+            const write = async (blob, name) => {
+              if (!tdir) return saveBlob(blob, name);
+              try {
+                const fh = await tdir.getFileHandle(name, { create: true });
+                const w = await fh.createWritable();
+                try { await w.write(blob); await w.close(); } catch (e) { try { await w.abort(); } catch {} throw e; }
+              } catch (e) { throw fsErr(e); }
+            };
+            const exists = async (name) => { if (!tdir) return false; try { await tdir.getFileHandle(name); return true; } catch { return false; } };
+            const markDone = (keys) => { if (!keys.length) return; Hist.touch(m, { dl: keys }); if (view?.m.id === m.id) keys.forEach((k) => view.done?.add(k)); };
+            const flush = async () => {
               if (!part.length) return;
               const cn = (c) => (c.ch != null && c.ch !== "" ? numPad(c.ch) : "oneshot");
               const range = partFirst === partLast ? `Ch. ${cn(partFirst)}` : `Ch. ${cn(partFirst)}-${cn(partLast)}`;
-              saveBlob(DocX.zip(part, "application/zip"), `${T} - ${range}.zip`);
+              await write(DocX.zip(part, "application/zip"), `${T} - ${range}.zip`);
               job.files++;
-              part = []; partBytes = 0; partFirst = partLast = null;
+              markDone(partKeys);
+              part = []; partBytes = 0; partFirst = partLast = null; partKeys = [];
             };
             paint();
             try {
+              if (opt.dir) { try { tdir = opt.sub ? await opt.dir.getDirectoryHandle(T, { create: true }) : opt.dir; } catch (e) { throw fsErr(e); } }
               for (const c of list) {
                 job.cur = chShort(c);
+                const folder0 = safe(chName(c) + (c.group && opt.group ? ` [${c.group}]` : ""));
+                if (opt.fmt === "cbz" && opt.skip && (await exists(`${T} - ${folder0}.cbz`))) { job.skipped++; job.done++; markDone([dkey(c)]); paint(); continue; }
                 job.pageNow = 0;
                 job.pageMax = c.pages || 0;
                 paint();
@@ -9466,30 +9596,38 @@ $$);`;
                 }
                 const folder = safe(chName(c) + (c.group && opt.group ? ` [${c.group}]` : ""));
                 if (opt.fmt === "cbz") {
-                  saveBlob(DocX.zip([{ name: "ComicInfo.xml", data: comicInfo(m, c, imgs.length) }, ...imgs], "application/vnd.comicbook+zip"), `${T} - ${folder}.cbz`);
+                  await write(DocX.zip([{ name: "ComicInfo.xml", data: comicInfo(m, c, imgs.length) }, ...imgs], "application/vnd.comicbook+zip"), `${T} - ${folder}.cbz`);
                   job.files++;
+                  markDone([dkey(c)]);
                 } else {
                   const size = imgs.reduce((a, x) => a + x.data.length, 0);
-                  if (part.length && partBytes + size > PART_LIMIT) flush();
+                  if (part.length && partBytes + size > PART_LIMIT) await flush();
                   part.push({ name: `${T}/${folder}/ComicInfo.xml`, data: comicInfo(m, c, imgs.length) });
                   imgs.forEach((x) => part.push({ name: `${T}/${folder}/${x.name}`, data: x.data }));
                   partBytes += size;
                   partFirst = partFirst || c;
                   partLast = c;
+                  partKeys.push(dkey(c));
                 }
                 job.done++;
                 paint();
               }
-              flush();
-              const msg = job.failed.length ? `Selesai · ${job.done - job.failed.length}/${job.total} chapter (${job.failed.length} gagal)` : `Selesai · ${job.total} chapter · ${mb(job.bytes)}`;
+              await flush();
+              const okN = job.done - job.failed.length - job.skipped;
+              const msg = job.failed.length ? `Selesai · ${okN}/${job.total} chapter (${job.failed.length} gagal)` : `Selesai · ${okN} chapter · ${mb(job.bytes)}`;
               toast(msg, job.failed.length ? "info" : undefined);
               notifyDone(m, msg);
+              if (view?.m.id === m.id) {
+                view.okMsg = `<b>${okN} chapter tersimpan</b> di ${esc(where)}${job.skipped ? ` · ${job.skipped} dilewati karena sudah ada` : ""}`;
+                list.forEach((c) => { if (view.done?.has(dkey(c))) view.sel.delete(c.id); });
+              }
             } catch (e) {
-              if (signal.aborted) { flush(); toast("Unduhan dibatalkan" + (job.files ? ` · ${job.files} file sudah tersimpan` : "")); }
+              if (signal.aborted) { try { await flush(); } catch {} toast("Unduhan dibatalkan" + (job.files ? ` · ${job.files} file sudah tersimpan` : "")); }
               else toast("Unduhan gagal: " + e.message, true);
             } finally {
               const failed = job.failed;
               job = null;
+              if (sheet && view) renderList();
               paint(failed);
             }
           }
@@ -9566,9 +9704,9 @@ $$);`;
             const c = chosen();
             const pages = c.reduce((a, x) => a + (x.pages || 0), 0);
             const est = pages * (view.q === "saver" ? 150 : 420) * 1024;
-            const known = c.every((x) => x.pages);
+            const known = c.length > 0 && c.every((x) => x.pages);
             const sum = known ? `<b>${c.length} chapter</b> · ${pages} halaman · ±${mb(est)}${view.fmt === "zip" && est > PART_LIMIT ? `<br><small>ZIP akan dipecah jadi beberapa file (±180 MB per file)</small>` : ""}` : `<b>${c.length} chapter</b>${c.length ? `<br><small>Jumlah halaman & ukuran dihitung saat mengunduh${view.fmt === "zip" ? " · ZIP besar otomatis dipecah ±180 MB" : ""}</small>` : ""}`;
-            foot.innerHTML = `${failed?.length ? `<div class="mdl-fail">${icon("alert")}<span>${failed.length} chapter gagal: ${esc(failed.slice(0, 3).join("; "))}${failed.length > 3 ? "…" : ""}</span></div>` : ""}<div class="mdl-sum">${sum}</div><button class="btn primary" data-dl="go" ${c.length ? "" : "disabled"}>${icon("download")}Unduh</button>`;
+            foot.innerHTML = `${view.okMsg ? `<div class="mdl-ok">${icon("check")}<span>${view.okMsg}</span></div>` : ""}${failed?.length ? `<div class="mdl-fail">${icon("alert")}<span>${failed.length} chapter gagal: ${esc(failed.slice(0, 3).join("; "))}${failed.length > 3 ? "…" : ""}</span></div>` : ""}<div class="mdl-sum">${sum}</div><button class="btn primary" data-dl="go" ${c.length ? "" : "disabled"}>${icon("download")}Unduh</button>`;
           }
           function renderList() {
             const box = sheet.querySelector(".mdl-list");
@@ -9589,7 +9727,7 @@ $$);`;
               groups[groups.length - 1].list.push(c);
             }
             const row = (c) => `<label class="mdl-it${view.sel.has(c.id) ? " sel" : ""}${c.locked ? " lock" : ""}"${c.locked ? ' title="Chapter Premium (berkoin) tidak bisa diunduh"' : ""}><input type="checkbox" data-dl-ch="${esc(c.id)}" ${view.sel.has(c.id) ? "checked" : ""} ${c.locked ? "disabled" : ""}>
-                <span class="mi-l"><span class="n">${langBadge(c.lang)}<b>${c.ch != null && c.ch !== "" ? `Ch. ${esc(c.ch)}` : "Oneshot"}${c.title ? ` - ${esc(c.title)}` : ""}</b>${c.locked ? `<span class="lk">${icon("lock")}Premium</span>` : ""}</span><span class="g">${icon("users")}<span>${esc(c.group || (isMD(view.m) ? "Tanpa grup" : srcName(view.m)))}</span></span></span>
+                <span class="mi-l"><span class="n">${langBadge(c.lang)}<b>${c.ch != null && c.ch !== "" ? `Ch. ${esc(c.ch)}` : "Oneshot"}${c.title ? ` - ${esc(c.title)}` : ""}</b>${c.locked ? `<span class="lk">${icon("lock")}Premium</span>` : ""}${view.done?.has(dkey(c)) ? `<span class="dn" title="Sudah pernah diunduh">${icon("check")}Sudah diunduh</span>` : ""}</span><span class="g">${icon("users")}<span>${esc(c.group || (isMD(view.m) ? "Tanpa grup" : srcName(view.m)))}</span></span></span>
                 <span class="mi-r"><span class="ago" title="${c.at ? esc(new Date(c.at).toLocaleString("id-ID")) : ""}">${icon("clock")}${c.at ? esc(since(c.at)) : "—"}</span><span class="pg">${c.locked ? "terkunci" : c.pages ? c.pages + " hlm" : ""}</span></span></label>`;
             box.innerHTML = groups
               .map((g) => {
@@ -9614,7 +9752,7 @@ $$);`;
             sheet.setAttribute("role", "dialog");
             sheet.setAttribute("aria-modal", "true");
             sheet.innerHTML = `<div class="am-head"><button class="x" aria-label="Tutup" data-dl="close">${icon("x")}</button><span class="t">Unduh chapter</span></div>
-              <div class="mdl-top">${img(m.cover)}<div><b>${esc(m.title)}</b><span>Sumber: <span class="src-b ${(SRC[srcOf(m)] || SRC.mangadex).cls}">${esc(srcName(m))}</span> ${!isMD(m) && /^https?:/.test(m.id) ? esc(new URL(m.id).hostname.replace(/^www\./, "")) + " · " : ""}disimpan ke folder Unduhan</span></div></div>
+              <div class="mdl-top">${img(m.cover)}<div><b>${esc(m.title)}</b><span>Sumber: <span class="src-b ${(SRC[srcOf(m)] || SRC.mangadex).cls}">${esc(srcName(m))}</span> ${!isMD(m) && /^https?:/.test(m.id) ? esc(new URL(m.id).hostname.replace(/^www\./, "")) + " · " : ""}disimpan ke <span class="dest">${esc(destLabel())}</span></span></div></div>
               <div class="mdl-body"><div class="mg-load">Memuat daftar chapter…</div></div>
               <div class="mdl-foot"></div>`;
             sheet._ov = ov;
@@ -9623,6 +9761,74 @@ $$);`;
             sheet.addEventListener("change", onChange);
           }
           const srcName = (m) => (SRC[srcOf(m)] || SRC.mangadex).name;
+          const dkey = (c) => `${c.lang}|${c.ch != null && c.ch !== "" ? c.ch : "oneshot"}`;
+          // pilih otomatis chapter lanjutan (setelah chapter terakhir yang pernah diunduh)
+          function autoNext() {
+            if (!view.done?.size) return false;
+            const best = {};
+            view.done.forEach((k) => { const [l, n] = k.split("|"); const x = parseFloat(n); if (!isNaN(x)) { best[l] = best[l] || { n: 0, max: -Infinity }; best[l].n++; best[l].max = Math.max(best[l].max, x); } });
+            const langs = Object.keys(best).filter((l) => view.all.some((c) => c.lang === l));
+            if (!langs.length) return false;
+            const lang = langs.sort((a, b) => best[b].n - best[a].n)[0];
+            if (view.lang !== "all") view.lang = ["id", "en"].includes(lang) ? lang : "all";
+            const next = filtered().filter((c) => c.lang === lang && !c.locked && !view.done.has(dkey(c)) && chNum(c) > best[lang].max);
+            if (!next.length) { toast(`Belum ada chapter baru setelah Ch. ${best[lang].max}`, "info"); return true; }
+            next.forEach((c) => view.sel.add(c.id));
+            const i = filtered().findIndex((c) => view.sel.has(c.id));
+            if (i >= 0) view.page = Math.floor(i / view.per) + 1;
+            const ns = next.map(chNum).filter((x) => x >= 0);
+            toast(`${next.length} chapter lanjutan dipilih${ns.length ? ` (Ch. ${Math.min(...ns)}${ns.length > 1 ? "–" + Math.max(...ns) : ""})` : ""}`);
+            return true;
+          }
+          /* ---- simpan ke folder pilihan (File System Access API; Chrome/Edge, Chrome Android 132+) ---- */
+          const FS_OK = "showDirectoryPicker" in window && window.isSecureContext;
+          const FSDB = {
+            db: null,
+            async open() { if (this.db) return this.db; this.db = await new Promise((res, rej) => { const r = indexedDB.open("rexxa-fs", 1); r.onupgradeneeded = () => r.result.createObjectStore("h"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); return this.db; },
+            async get(k) { const d = await this.open(); return new Promise((res, rej) => { const q = d.transaction("h").objectStore("h").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => rej(q.error); }); },
+            async set(k, v) { const d = await this.open(); return new Promise((res, rej) => { const t = d.transaction("h", "readwrite"); v == null ? t.objectStore("h").delete(k) : t.objectStore("h").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); },
+          };
+          let dirH;
+          async function getDir() { if (dirH === undefined) { try { dirH = (await FSDB.get("dl")) || null; } catch { dirH = null; } } return dirH; }
+          async function dirPerm(h, ask) {
+            try {
+              if ((await h.queryPermission({ mode: "readwrite" })) === "granted") return true;
+              return ask ? (await h.requestPermission({ mode: "readwrite" })) === "granted" : false;
+            } catch { return false; }
+          }
+          async function pickDir() {
+            try {
+              const h = await window.showDirectoryPicker({ id: "rexxa-manga", mode: "readwrite", startIn: "downloads" });
+              dirH = h; mc.dlDirName = h.name; mc.dlTo = "folder"; saveMc();
+              try { await FSDB.set("dl", h); } catch {}
+              return h;
+            } catch (e) {
+              if (e.name !== "AbortError") toast(e.name === "SecurityError" || e.name === "NotAllowedError" ? "Folder ini tidak boleh dipakai browser. Pilih folder lain, misalnya Download/Manga." : "Gagal memilih folder: " + e.message, true);
+              return null;
+            }
+          }
+          const useFolder = () => FS_OK && mc.dlTo === "folder";
+          const subOn = () => mc.dlSub !== false, skipOn = () => mc.dlSkip !== false;
+          function destLabel() { return useFolder() && mc.dlDirName ? `${mc.dlDirName}${subOn() ? "/" + safe(view?.m.title) : ""}` : "folder Unduhan"; }
+          async function renderSave() {
+            const box = sheet?.querySelector(".mdl-save");
+            if (!box) return;
+            const hd = sheet.querySelector(".mdl-top .dest");
+            if (hd) hd.textContent = destLabel();
+            if (!FS_OK) { box.innerHTML = `<div class="hint">${icon("info")} Browser ini hanya bisa menyimpan ke folder Unduhan. Pilih folder sendiri bisa di Chrome/Edge (Android & laptop).</div>`; return; }
+            const h = useFolder() ? await getDir() : null;
+            const ok = h ? await dirPerm(h, false) : false;
+            const seg = `<div class="top"><span class="lbl">Simpan ke</span><div class="seg sm"><button data-dl-to="downloads" class="${useFolder() ? "" : "on"}">Folder Unduhan</button><button data-dl-to="folder" class="${useFolder() ? "on" : ""}">Folder pilihan…</button></div></div>`;
+            const T = safe(view?.m.title);
+            const ex = view?.fmt === "cbz" ? `${T} - Ch. 001.cbz` : `${T} - Ch. 001-010.zip`;
+            let card = "";
+            if (!useFolder()) card = `<div class="mdl-dir"><span class="fi">${icon("folder")}</span><span class="nm"><b>Folder Unduhan bawaan</b><small>Lewat daftar unduhan browser</small></span></div>`;
+            else if (!h) card = `<div class="mdl-dir warn"><span class="fi">${icon("folder")}</span><span class="nm"><b>Belum ada folder</b><small>Pilih folder tujuan, misalnya Download/Manga</small></span><button class="btn primary" data-dl="pickdir">Pilih folder</button></div>`;
+            else if (!ok) card = `<div class="mdl-dir warn"><span class="fi">${icon("folder")}</span><span class="nm"><b>${esc(h.name)}</b><small>Izin folder perlu diberikan lagi setelah aplikasi dibuka ulang</small></span><button class="btn primary" data-dl="perm">Izinkan</button></div>`;
+            else card = `<div class="mdl-dir"><span class="fi">${icon("folder")}</span><span class="nm"><b>${esc(h.name)}</b><small>→ ${esc((subOn() ? T + "/" : "") + ex)}</small></span><button class="btn" data-dl="pickdir">Ganti</button></div>`;
+            const opts = useFolder() && h && ok ? `<label class="mg-chk"><input type="checkbox" id="mdl-sub" ${subOn() ? "checked" : ""}> Buat subfolder per judul</label><label class="mg-chk"><input type="checkbox" id="mdl-skip" ${skipOn() ? "checked" : ""}> Lewati chapter yang sudah ada di folder${view?.fmt === "cbz" ? "" : " (khusus CBZ per chapter)"}</label>` : "";
+            box.innerHTML = seg + card + opts;
+          }
           // pilih chapter dari link & pindah ke halaman daftar tempat chapter itu berada
           function preselect(id) {
             const c = view.all.find((x) => x.id === id);
@@ -9635,7 +9841,10 @@ $$);`;
           }
           async function open(m) {
             m = { ...m, source: srcOf(m) };
-            if (view?.m.id === m.id && view.m.source === m.source && view.all) { const pre = m.pre; view.m = { ...view.m, pre }; shell(view.m); fillBody(); if (pre) preselect(pre); renderList(); paint(); return; }
+            if (view?.m.id === m.id && view.m.source === m.source && view.all) {
+              const pre = m.pre; view.m = { ...view.m, pre }; view.done = new Set(Hist.find(view.m)?.dl || []); view.okMsg = null;
+              shell(view.m); fillBody(); if (pre) preselect(pre); else if (!view.sel.size) autoNext(); renderList(); paint(); return;
+            }
             view = { m, all: null, sel: new Set(), lang: "id", dedupe: true, q: isMD(m) ? mc.dlQ || "data" : "data", fmt: mc.dlFmt || "zip", group: false, desc: mc.dlAsc ? false : true, per: [10, 20, 50].includes(mc.dlPer) ? mc.dlPer : 10, page: 1 };
             shell(m);
             try {
@@ -9643,8 +9852,10 @@ $$);`;
               if (view?.m.id !== m.id) return;
               view.all = r.chapters || [];
               if (!view.all.some((c) => c.lang === "id")) view.lang = view.all.some((c) => c.lang === "en") ? "en" : "all";
+              view.done = new Set(Hist.find(m)?.dl || []);
               fillBody();
-              if (m.pre) { preselect(m.pre); renderList(); }
+              if (m.pre) preselect(m.pre); else autoNext();
+              renderList();
               paint();
             } catch (e) {
               const b = sheet?.querySelector(".mdl-body");
@@ -9665,8 +9876,10 @@ $$);`;
               <div class="mdl-opts">
                 <div><span class="lbl">Kualitas</span><div class="seg sm"><button data-dl-q="data" class="${view.q === "data" ? "on" : ""}">Asli</button><button data-dl-q="saver" class="${view.q === "saver" ? "on" : ""}" ${isMD(view.m) ? "" : `disabled title="${esc(srcName(view.m))} tidak punya mode hemat data"`}>Hemat data</button></div></div>
                 <div><span class="lbl">Format</span><div class="seg sm"><button data-dl-fmt="zip" class="${view.fmt === "zip" ? "on" : ""}" title="Satu file ZIP berisi folder per chapter">ZIP</button><button data-dl-fmt="cbz" class="${view.fmt === "cbz" ? "on" : ""}" title="Satu file .cbz per chapter (Mihon, Tachiyomi, Perfect Viewer)">CBZ per chapter</button></div></div>
+                <div class="mdl-save"></div>
               </div>`;
             renderList();
+            renderSave();
           }
           function close(silent) {
             if (!sheet) return;
@@ -9678,6 +9891,9 @@ $$);`;
             setTimeout(() => { s.remove(); ov.remove(); }, 270);
           }
           function onChange(e) {
+            if (e.target.id === "mdl-sub") { mc.dlSub = e.target.checked; saveMc(); renderSave(); return; }
+            if (e.target.id === "mdl-skip") { mc.dlSkip = e.target.checked; saveMc(); return; }
+            view.okMsg = null;
             const ch = e.target.dataset.dlCh;
             if (ch) { e.target.checked ? view.sel.add(ch) : view.sel.delete(ch); e.target.closest(".mdl-it")?.classList.toggle("sel", e.target.checked); renderFoot(); }
             if (e.target.dataset.dlVol !== undefined) {
@@ -9687,8 +9903,16 @@ $$);`;
             if (e.target.id === "mdl-dedupe") { view.dedupe = e.target.checked; view.page = 1; renderList(); }
           }
           function onClick(e) {
-            const t = e.target.closest("[data-dl],[data-dl-lang],[data-dl-q],[data-dl-fmt],[data-dl-per],[data-pg]");
+            const t = e.target.closest("[data-dl],[data-dl-lang],[data-dl-q],[data-dl-fmt],[data-dl-per],[data-dl-to],[data-pg]");
             if (!t) return;
+            if (t.dataset.dlTo) {
+              if (t.dataset.dlTo === "folder") { mc.dlTo = "folder"; saveMc(); getDir().then((h) => (h ? renderSave() : pickDir().then(renderSave))); }
+              else { mc.dlTo = "downloads"; saveMc(); renderSave(); }
+              return;
+            }
+            if (t.dataset.dl === "pickdir") { pickDir().then(renderSave); return; }
+            if (t.dataset.dl === "perm") { getDir().then((h) => h && dirPerm(h, true)).then((ok) => { if (ok === false) toast("Izin folder ditolak. Unduhan akan masuk ke folder Unduhan.", "warn"); renderSave(); }); return; }
+            if (t.dataset.dl !== "close" && t.dataset.dl !== "cancel") view.okMsg = null;
             if (t.dataset.pg) { if (!t.disabled) { view.page = +t.dataset.pg.split(":")[1]; renderList(); } return; }
             if (t.dataset.dlPer) { view.per = mc.dlPer = +t.dataset.dlPer; saveMc(); view.page = 1; sheet.querySelectorAll("[data-dl-per]").forEach((b) => b.classList.toggle("on", b === t)); renderList(); return; }
             if (t.dataset.dl === "sort") {
@@ -9702,7 +9926,7 @@ $$);`;
             if (t.dataset.dlLang) { view.lang = t.dataset.dlLang; view.page = 1; renderList(); return; }
             if (t.dataset.dlQ && t.disabled) return;
             if (t.dataset.dlQ) { view.q = mc.dlQ = t.dataset.dlQ; saveMc(); sheet.querySelectorAll("[data-dl-q]").forEach((b) => b.classList.toggle("on", b === t)); renderFoot(); return; }
-            if (t.dataset.dlFmt) { view.fmt = mc.dlFmt = t.dataset.dlFmt; saveMc(); sheet.querySelectorAll("[data-dl-fmt]").forEach((b) => b.classList.toggle("on", b === t)); renderFoot(); return; }
+            if (t.dataset.dlFmt) { view.fmt = mc.dlFmt = t.dataset.dlFmt; saveMc(); sheet.querySelectorAll("[data-dl-fmt]").forEach((b) => b.classList.toggle("on", b === t)); renderFoot(); renderSave(); return; }
             if (a === "all") { filtered().forEach((c) => !c.locked && view.sel.add(c.id)); renderList(); }
             if (a === "page") { const f = (view.page - 1) * view.per; filtered().slice(f, f + view.per).forEach((c) => !c.locked && view.sel.add(c.id)); renderList(); }
             if (a === "none") { view.sel.clear(); renderList(); }
@@ -9717,7 +9941,17 @@ $$);`;
               if (job) return toast("Masih ada unduhan yang berjalan", true);
               const list = chosen();
               if (!list.length) return;
-              run(view.m, list, { q: view.q, fmt: view.fmt, group: !view.dedupe });
+              const opt = { q: view.q, fmt: view.fmt, group: !view.dedupe, dir: null, sub: subOn(), skip: skipOn() };
+              if (useFolder()) {
+                // izin folder diminta di sini (masih dalam ketukan tombol Unduh)
+                getDir().then(async (h) => {
+                  if (!h) h = await pickDir();
+                  if (h && (await dirPerm(h, true))) opt.dir = h;
+                  else toast("Folder tidak bisa dipakai, unduhan masuk ke folder Unduhan", "warn");
+                  renderSave();
+                  run(view.m, list, opt);
+                });
+              } else run(view.m, list, opt);
             }
           }
           window.addEventListener("beforeunload", (e) => { if (job) { e.preventDefault(); e.returnValue = ""; } });
@@ -9764,6 +9998,15 @@ $$);`;
           if (a === "test") testPush();
           if (a === "search") search($("#mg-q").value);
           if (a === "link") openLink($("#mg-url")?.value);
+          if (a === "hist") { histOpen = !histOpen; Hist.prune(); paintHist(); return; }
+          if (a === "hist-clear") {
+            if (!(await confirmDialog({ tone: "danger", title: "Hapus semua riwayat link?", html: `${(state.mangaLinks || []).length} link akan dihapus${Sync.isOn() ? " di semua perangkat" : ""}. File yang sudah diunduh tidak ikut terhapus.`, ok: "Hapus semua" }))) return;
+            (state.mangaLinks || []).slice().forEach((x) => Hist.drop(x.id)); save(); paintHist(); toast("Riwayat link dihapus"); return;
+          }
+          const hd = e.target.closest("[data-hist-del]")?.dataset.histDel;
+          if (hd) { Hist.drop(hd); save(); paintHist(); return; }
+          const ho = e.target.closest("[data-hist]")?.dataset.hist;
+          if (ho) { openHist(ho); return; }
           if (a === "clear") { results = null; render(); }
           if (a === "check") checkNow();
           if (a === "setup") { mc.ready = false; saveMc(); render(); }
@@ -9787,7 +10030,8 @@ $$);`;
           setInterval(() => { if (document.visibilityState === "visible") refreshData(); }, 10 * 60e3);
           document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refreshData(); });
         }
-        return { init, show, render, refreshData, __pager: pager };
+        const linksSynced = () => { if ($("#mg-body .mg-url")) paintHist(); };
+        return { init, show, render, refreshData, linksSynced, __pager: pager };
       })();
 
 
@@ -14705,6 +14949,16 @@ where t.kind = 'chat' and not t.deleted
                 after.push(() => (cfg.sigs[k] = sg));
               }
             }
+            for (const ln of state.mangaLinks || []) {
+              const k = "mangalink:" + ln.id;
+              const { _rev, ...d } = ln;
+              const sg = JSON.stringify(d);
+              if (cfg.sigs[k] !== sg) {
+                ln._rev = Math.max(now, (ln._rev || 0) + 1);
+                rows.push({ kind: "mangalink", id: ln.id, data: d, updated_at: ln._rev, deleted: false });
+                after.push(() => (cfg.sigs[k] = sg));
+              }
+            }
             {
               const d = metaData(),
                 sg = JSON.stringify(d);
@@ -14837,7 +15091,8 @@ where t.kind = 'chat' and not t.deleted
             activeChanged = false,
             profChanged = false,
             metaChanged = false,
-            usageChanged = false;
+            usageChanged = false,
+            linksChanged = false;
           for (const r of rows) {
             const k = r.kind + ":" + r.id;
             if (r.kind === "usage") {
@@ -14872,7 +15127,9 @@ where t.kind = 'chat' and not t.deleted
                   ? state.profiles
                   : r.kind === "event"
                     ? (state.events = state.events || [])
-                    : null;
+                    : r.kind === "mangalink"
+                      ? (state.mangaLinks = state.mangaLinks || [])
+                      : null;
             if (!list) continue;
             const idx = list.findIndex((x) => x.id === r.id);
             const local = list[idx];
@@ -14920,7 +15177,7 @@ where t.kind = 'chat' and not t.deleted
               cfg.sigs[k] =
                 r.kind === "chat"
                   ? sigChat(item)
-                  : r.kind === "event"
+                  : r.kind === "event" || r.kind === "mangalink"
                     ? JSON.stringify((({ _rev, ...x }) => x)(item))
                     : JSON.stringify(profData(item));
               if (r.kind === "chat" && r.id === state.activeChatId)
@@ -14928,6 +15185,7 @@ where t.kind = 'chat' and not t.deleted
             }
             if (r.kind === "chat") chatsChanged = true;
             else if (r.kind === "event") evChanged = true;
+            else if (r.kind === "mangalink") linksChanged = true;
             else profChanged = true;
           }
           if (!state.profiles.length) state.profiles = defaultProfiles();
@@ -14936,6 +15194,10 @@ where t.kind = 'chat' and not t.deleted
           if (evChanged) {
             persistNow();
             Cal.refresh();
+          }
+          if (linksChanged) {
+            persistNow();
+            Manga.linksSynced?.();
           }
           if (chatsChanged || profChanged || metaChanged || usageChanged) {
             persistNow();

@@ -42,3 +42,13 @@ Sheet **Unduh chapter** terbuka seperti biasa: pilih chapter / rentang, format *
 - Bila muncul "dilindungi Cloudflare", situs menolak server Supabase. Coba lagi nanti.
 - Bila muncul "Edge Function masih versi lama": salin kode function terbaru dari menu Manga → Deploy ulang `rexxa-manga`.
 - Gunakan untuk baca pribadi/offline. Hormati situs sumber dan pembuat karyanya.
+
+## Riwayat link & simpan ke folder
+- **Riwayat link** (tombol jam di sebelah **Buka**): link yang pernah dibuka/diunduh. Ketuk untuk membuka lagi tanpa salin-tempel.
+  - Bila pernah mengunduh, chapter **lanjutan** (setelah chapter terakhir yang diunduh) otomatis tercentang. Chapter yang sudah diunduh bertanda **✓ Sudah diunduh**.
+  - Hapus per item (ikon tempat sampah) atau **Hapus semua**. Maks. 30 link, terhapus otomatis setelah 30 hari.
+  - Ikut sinkron ke semua perangkat bila Sinkronisasi Supabase aktif (tabel `rexxa_items`, tidak perlu SQL baru).
+- **Simpan ke → Folder pilihan…** (Chrome/Edge, Chrome Android 132+): pilih folder sekali, file langsung ditulis ke sana.
+  - Opsi **subfolder per judul** dan **lewati chapter yang sudah ada** (khusus CBZ per chapter).
+  - Folder diingat per perangkat (tidak ikut sinkron). Setelah aplikasi dibuka ulang, browser bisa meminta izin lagi: ketuk **Izinkan**.
+  - Firefox/Safari/iPhone: otomatis memakai folder Unduhan.

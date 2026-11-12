@@ -52,3 +52,39 @@ Sheet **Unduh chapter** terbuka seperti biasa: pilih chapter / rentang, format *
   - Opsi **subfolder per judul** dan **lewati chapter yang sudah ada** (khusus CBZ per chapter).
   - Folder diingat per perangkat (tidak ikut sinkron). Setelah aplikasi dibuka ulang, browser bisa meminta izin lagi: ketuk **Izinkan**.
   - Firefox/Safari/iPhone: otomatis memakai folder Unduhan.
+
+## Jelajah, baca di aplikasi & bookmark (function v1.8.0)
+Tab **Jelajah** di menu Manga: pilih sumber **Shinigami**, **Komiku**, atau **Kiryuu**, cari judul, lalu baca langsung di REXXA.
+
+- **Tipe**: Semua · Manga · Manhwa · Manhua (difilter oleh situsnya; label tipe tampil di sampul).
+- **Urutkan**: Update terbaru · Populer. Ketiga situs tidak menyediakan populer per periode (harian/bulanan/tahunan), jadi yang ada hanya populer keseluruhan.
+- **Per halaman**: 10 judul di HP, 15 di layar lebar (≥ 820 px), dengan tombol Sebelumnya/Berikutnya. Pilihan tipe & urutan diingat.
+
+**Update dari versi sebelumnya (sekali saja):**
+1. **Salin SQL Manga** → Supabase → SQL Editor → Run (menambah migrasi `supabase-migrations/2026-11-13_web_sources.sql`; aman dijalankan ulang).
+2. **Salin kode function** → Supabase → Edge Functions → `rexxa-manga` → Code → tempel → **Deploy**.
+
+**Pemakaian**
+- Ketuk judul → **Mulai baca / Lanjut Chapter X**. Reader punya mode **Webtoon ↕**, **Halaman →**, dan **Manga ←**; ketuk gambar untuk menyembunyikan bar.
+- Posisi baca tersimpan di perangkat; chapter yang sudah dibaca diberi tanda.
+- **Bookmark** → judul masuk tab **Diikuti** dan ikut dicek tiap jam. Chapter baru muncul di tab **Update** dan dikirim sebagai notifikasi; ketuk notifikasinya untuk langsung membuka chapter itu di reader.
+- 🔔 di tab Diikuti untuk membisukan, 🗑 (atau tombol **Di-bookmark**) untuk menghapus bookmark.
+
+**Catatan**
+- Saat bookmark dibuat, chapter terbaru dijadikan patokan, jadi notifikasi hanya untuk chapter yang rilis sesudahnya. Chapter lama (> 7 hari) yang baru muncul tidak dinotifikasi.
+- Maks. 40 judul situs web dicek per jalan cron (jeda ±1 detik antar judul); sisanya giliran jam berikutnya. Situs yang sedang down dilewati sampai jalan berikutnya.
+- Domain situs sering pindah. Kalau rusak, isi secret di Edge Functions → Secrets: `SHNGM_API`, `SHNGM_SITE`, `KOMIKU_SITE`, `KOMIKU_API`, `KIRYUU_SITE`.
+
+## Baca dari folder HP (tanpa server)
+Tab **Jelajah → Folder HP**: pilih folder atau file. Semua dibaca di perangkat, tidak diunggah.
+
+- **Bentuk yang dikenali**: `Seri/Chapter 1/001.webp…`, folder perpustakaan `Komik/Seri/Chapter/…`, satu folder chapter, gambar lepas, atau **CBZ/ZIP** (satu arsip = satu chapter; arsip berisi beberapa folder = beberapa chapter). Chapter dari folder & CBZ dengan judul seri yang sama digabung.
+- **Urutan** mengikuti nomor chapter/halaman (`2` sebelum `10`).
+- **Tipe dikenali otomatis** dari beberapa halaman contoh:
+  - rasio tinggi:lebar ≥ 2 → **Manhwa/Manhua · strip panjang** → mode **Webtoon**, strip disambung tanpa celah;
+  - hitam-putih → **Manga** → mode **Manga ←** (kanan ke kiri);
+  - berwarna per halaman → mode **Halaman →**.
+  Mode yang kamu ganti di reader diingat per seri.
+- Halaman dimuat saat mendekati layar, jadi strip yang sangat panjang tetap ringan.
+- Setelah aplikasi ditutup, pilih ulang foldernya (batasan browser); posisi baca tetap tersimpan.
+- Kalau **Pilih folder** tidak tersedia di HP, pakai **Pilih file** lalu tandai semua gambar satu chapter, atau pilih file CBZ/ZIP.

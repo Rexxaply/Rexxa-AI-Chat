@@ -3,14 +3,14 @@
 // - Pengecekan chapter baru terjadwal (dipanggil pg_cron tiap jam)
 // - Mengirim Web Push ke perangkat pengguna
 // - Unduh chapter: daftar chapter, alamat server MangaDex@Home, dan proxy gambar cadangan
-// - Unduh dari link: MangaDex, Omega Scans, Shinigami, Komiku, Kiryuu, dan situs bertema MangaThemesia / Madara
-// - Jelajah & baca di aplikasi (v1.8.0): Shinigami, Komiku, dan Kiryuu
+// - Unduh dari link: MangaDex, Omega Scans, Shinigami, Komiku, Kiryuu, WestManga, dan situs bertema MangaThemesia / Madara
+// - Jelajah & baca di aplikasi: Shinigami, Komiku, Kiryuu, WestManga (v1.9.0)
 // Deploy: Supabase Dashboard → Edge Functions → Deploy a new function → Via Editor
 //         nama: rexxa-manga → tempel kode ini → Deploy → matikan "Verify JWT".
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.8.0";
+const VERSION = "1.9.0";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -360,9 +360,11 @@ async function insertUpdates(rows: any[]) {
   return out;
 }
 
-async function check(onlyUser?: string) {
+// opt.lists: daftar chapter yang dikirim aplikasi untuk manga yang servernya diblokir (mis. Shinigami di balik Cloudflare)
+async function check(onlyUser?: string, opt: { onlyManga?: string; lists?: Map<string, any[]> } = {}) {
   let q = admin.from("rexxa_manga_follows").select("*").order("checked_at", { ascending: true, nullsFirst: true }).limit(200);
   if (onlyUser) q = q.eq("user_id", onlyUser);
+  if (opt.onlyManga) q = q.eq("manga_id", opt.onlyManga);
   const { data: follows, error } = await q;
   if (error) throw error;
   const perUser = new Map<string, any[]>();
@@ -394,7 +396,7 @@ async function check(onlyUser?: string) {
       if (webChecked >= WEB_PER_RUN || webDown.has(webSrc)) continue;
       try {
         const wid = webIdOf(f);
-        const list = await webChapters(webSrc, wid);
+        const list = opt.lists?.get(f.manga_id) ?? await webChapters(webSrc, wid);
         webChecked++; checked++;
         const firstSync = seen.id == null;
         const top = newestChapter(list);
@@ -413,7 +415,7 @@ async function check(onlyUser?: string) {
         }
       } catch (e: any) {
         console.error("check web", f.manga_id, e?.message);
-        if ((e?.status ?? 0) >= 500 || /tidak bisa dihubungi|timeout/i.test(e?.message || "")) webDown.add(webSrc); // situs sedang bermasalah: lewati sisa manga dari situs ini
+        if ((e?.status ?? 0) >= 500 || /tidak bisa dihubungi|timeout|Cloudflare/i.test(e?.message || "")) webDown.add(webSrc); // situs sedang bermasalah: lewati sisa manga dari situs ini
         patch.checked_at = new Date().toISOString();
       }
       await sleep(WEB_DELAY);
@@ -547,7 +549,7 @@ async function check(onlyUser?: string) {
       const iconUrl = !f.cover ? undefined : /^https?:/.test(f.cover) ? f.cover : `${SUPABASE_URL}/functions/v1/rexxa-manga?cover=${encodeURIComponent(f.cover)}`;
       pushed += await pushTo(uid, {
         title: `${flag} ${f.title}`,
-        body: `Chapter ${c.chapter || "baru"}${c.title ? ` · ${c.title}` : ""} sudah rilis (${langTxt}${viaMu ? " · info MangaUpdates" : viaWeb ? " · " + ({ shinigami: "Shinigami", komiku: "Komiku", kiryuu: "Kiryuu" } as Record<string, string>)[c.source] : ""})${extra}`,
+        body: `Chapter ${c.chapter || "baru"}${c.title ? ` · ${c.title}` : ""} sudah rilis (${langTxt}${viaMu ? " · info MangaUpdates" : viaWeb ? " · " + ({ shinigami: "Shinigami", komiku: "Komiku", kiryuu: "Kiryuu", westmanga: "WestManga" } as Record<string, string>)[c.source] : ""})${extra}`,
         url: viaWeb ? appReadUrl(c.source, c.web_id, c.id) : c.url || (viaMu ? "./#manga" : undefined), tag: `manga-${f.manga_id}`, icon: iconUrl,
       });
     }
@@ -908,7 +910,7 @@ const SHNGM_API = Deno.env.get("SHNGM_API") || "https://api.shngm.io";
 const SHNGM_SITE = Deno.env.get("SHNGM_SITE") || "https://11.shinigami.asia";
 const KOMIKU_SITE = Deno.env.get("KOMIKU_SITE") || "https://komiku.org";
 const KOMIKU_API = Deno.env.get("KOMIKU_API") || "https://api.komiku.org";
-const BROWSE_SOURCES = ["shinigami", "komiku", "kiryuu"];
+const BROWSE_SOURCES = ["shinigami", "komiku", "kiryuu", "westmanga"];
 const shngJson = async (path: string) =>
   (await webFetch(SHNGM_API + path, { json: true, referer: SHNGM_SITE + "/", headers: { Origin: SHNGM_SITE, DNT: "1", "Sec-GPC": "1" } })).json();
 const shngCover = (o: any) => String(o?.cover_portrait_url || o?.cover_image_url || "");
@@ -1113,8 +1115,95 @@ async function kiryuuBySlug(slug: string) {
   if (!m?.id) throw webErr("Seri Kiryuu tidak ditemukan", 404);
   return { id: String(m.id), title: decodeEnt(stripTags(m.title?.rendered || slug)), cover: await webCoverProxy(kiryuuCover(m), KIRYUU_SITE + "/") };
 }
+/* WestManga: API JSON (pola dari extension Mihon id/westmanga). Semua permintaan API membawa visit token
+   (header X-WM-Visit dari /api/visit-token). Dua domain cermin; kalau yang pertama gagal, dicoba yang berikutnya. */
+const WEST_SITES = (Deno.env.get("WEST_SITE") || "https://v1.westmanga.my,https://v1.westmanga.top").split(",").map((x) => x.trim().replace(/\/+$/, "")).filter(Boolean);
+let westBase = WEST_SITES[0];
+let westVisit: { token: string; exp: number } | null = null;
+const WEST_TYPE: Record<string, string> = { JP: "manga", KR: "manhwa", CN: "manhua" };
+const WEST_COUNTRY: Record<string, string> = { manga: "JP", manhwa: "KR", manhua: "CN" };
+const westAbs = (u: string | null | undefined) => (!u ? "" : /^https?:/i.test(u) ? u : westBase + (u.startsWith("/") ? "" : "/") + u);
+async function westVisitToken(force = false) {
+  if (!force && westVisit && Date.now() < westVisit.exp - 5 * 60e3) return westVisit.token;
+  try {
+    const j = (await webFetch(`${westBase}/api/visit-token`, { json: true, referer: westBase + "/", headers: { "X-Requested-With": "XMLHttpRequest" } })).json();
+    if (j?.status && j.token) { westVisit = { token: String(j.token), exp: j.expires_at ? Number(j.expires_at) * 1000 : Date.now() + 3600e3 }; return westVisit.token; }
+  } catch (_) { /* tanpa token tetap dicoba */ }
+  if (force) westVisit = null;
+  return westVisit?.token || "";
+}
+async function westApi(path: string): Promise<any> {
+  let lastErr: any = null;
+  for (const base of [westBase, ...WEST_SITES.filter((b) => b !== westBase)]) {
+    westBase = base;
+    for (const force of [false, true]) {
+      try {
+        const tok = await westVisitToken(force);
+        return (await webFetch(base + path, { json: true, referer: base + "/", headers: { "X-Requested-With": "XMLHttpRequest", ...(tok ? { "X-WM-Visit": tok } : {}) } })).json();
+      } catch (e: any) {
+        lastErr = e;
+        if (!/\b(403|404)\b/.test(e?.message || "") || force) break; // 403/404: token kedaluwarsa → ambil token baru sekali
+      }
+    }
+  }
+  throw lastErr || webErr("WestManga tidak bisa dihubungi", 502);
+}
+const westSlug = (s: string) => { if (!/^[\w.%-]{1,200}$/.test(s)) throw webErr("ID WestManga tidak valid", 400); return s; };
+async function westBrowse(page: number, q: string, o: BrowseOpt) {
+  const p = new URLSearchParams({ page: String(page), per_page: String(o.limit), type: "Comic", orderBy: o.sort === "popular" ? "Popular" : "Update" });
+  if (q) p.set("q", q);
+  if (o.type) p.set("country", WEST_COUNTRY[o.type]);
+  const j = await westApi(`/api/contents?${p}`);
+  const items = await Promise.all((j?.data || []).filter((m: any) => m?.slug).map(async (m: any) => ({
+    id: String(m.slug), title: String(m.title || m.slug), cover: await webCoverProxy(westAbs(m.cover), westBase + "/"),
+    type: WEST_TYPE[String(m.country_id || "")] || o.type || "",
+  })));
+  const pg = j?.paginator || {};
+  const last = pg.last_page != null ? Number(pg.last_page) : null;
+  return { items, page, totalPages: last, hasNext: last != null ? Number(pg.current_page || page) < last : items.length >= o.limit };
+}
+const WEST_STATUS: Record<string, string> = { ongoing: "ongoing", completed: "completed", hiatus: "hiatus" };
+async function westDetail(id: string) {
+  const d = (await westApi(`/api/comic/${encodeURIComponent(westSlug(id))}`))?.data;
+  if (!d?.slug) throw webErr("Seri WestManga tidak ditemukan", 404);
+  const type = WEST_TYPE[String(d.country_id || "")] || "";
+  const chapters = (d.chapters || []).filter((c: any) => c?.slug).map((c: any) => {
+    const num = String(c.number ?? "").trim(), n = Number(num.replace(",", "."));
+    return { id: String(c.slug), ch: num ? (Number.isFinite(n) ? String(n) : num) : null, vol: null, title: "",
+      lang: "id", pages: null, group: "WestManga", at: c.updated_at?.time ? new Date(Number(c.updated_at.time) * 1000).toISOString() : null, locked: false,
+      url: `${westBase}/view/${c.slug}` };
+  });
+  return {
+    manga: {
+      id: String(d.slug), title: String(d.title || d.slug), cover: await webCoverProxy(westAbs(d.cover), westBase + "/"),
+      desc: stripTags(String(d.sinopsis || "").replace(/<\/p>\s*<p[^>]*>/gi, "\n\n").replace(/<br\s*\/?>/gi, "\n")).trim(),
+      tags: [...(type ? [type[0].toUpperCase() + type.slice(1)] : []), ...((d.genres || []).map((g: any) => g?.name).filter(Boolean))].slice(0, 8),
+      status: WEST_STATUS[String(d.status || "").toLowerCase()] || "", author: String(d.author || ""), url: `${westBase}/comic/${d.slug}`,
+    },
+    chapters,
+  };
+}
+async function westPages(id: string) {
+  const d = (await westApi(`/api/v/${encodeURIComponent(westSlug(id))}`))?.data;
+  const images: string[] = (d?.images || []).map((x: string) => westAbs(x)).filter(Boolean);
+  return { ref: westBase + "/", images };
+}
+/* data dari aplikasi (dipakai bila server diblokir): dibersihkan & dibatasi; hanya memengaruhi akun pengirim sendiri */
+const str = (x: unknown, n: number) => String(x ?? "").slice(0, n);
+function cleanChapters(x: unknown) {
+  return (Array.isArray(x) ? x : []).slice(0, 300).filter((c: any) => c && c.id).map((c: any) => ({
+    id: str(c.id, 300), ch: c.ch == null ? null : str(c.ch, 20), vol: null, title: str(c.title, 150), lang: "id", pages: null, group: "",
+    at: c.at && !isNaN(Date.parse(c.at)) ? new Date(c.at).toISOString() : null, locked: !!c.locked, url: /^https:\/\//.test(String(c.url || "")) ? str(c.url, 500) : null,
+  }));
+}
+function cleanSnapshot(x: any, id: string) {
+  if (!x || typeof x !== "object") return null;
+  const chapters = cleanChapters(x.chapters);
+  if (!chapters.length) return null;
+  return { manga: { id, title: str(x.title || "Manga", 200), cover: /^https:\/\//.test(String(x.cover || "")) ? str(x.cover, 1000) : "" }, chapters };
+}
 /* bookmark (follow) untuk sumber web: manga_id = "<sumber>:<id>" */
-const WEB_FOLLOW = ["shinigami", "komiku", "kiryuu"];
+const WEB_FOLLOW = ["shinigami", "komiku", "kiryuu", "westmanga"];
 const WEB_PER_RUN = 40;   // maks. manga web dicek per jalan cron (sisanya giliran berikutnya, urut checked_at)
 const WEB_DELAY = 900;    // jeda antar manga web (ms) agar tidak membebani situs
 const webIdOf = (f: any) => String(f.manga_id).slice(String(f.source).length + 1);
@@ -1158,12 +1247,14 @@ async function browseSource(source: string, page: number, q: string, o: BrowseOp
   if (source === "shinigami") return await shngBrowse(page, q, o);
   if (source === "komiku") return await komikuBrowse(page, q, o);
   if (source === "kiryuu") return await kiryuuBrowse(page, q, o);
+  if (source === "westmanga") return await westBrowse(page, q, o);
   throw webErr("sumber tidak dikenal", 400);
 }
 async function sourceDetail(source: string, id: string) {
   if (source === "shinigami") { const [manga, chapters] = await Promise.all([shngDetail(id), shngChapters(id)]); return { manga, chapters }; }
   if (source === "komiku") return await komikuDetail(id);
   if (source === "kiryuu") return await kiryuuDetail(id);
+  if (source === "westmanga") return await westDetail(id);
   throw webErr("sumber tidak dikenal", 400);
 }
 
@@ -1213,6 +1304,12 @@ async function resolveLink(raw: string) {
     if (!m) throw webErr("Link Kiryuu harus berupa halaman judul (/manga/…)", 400);
     return { source: "kiryuu", manga: await kiryuuBySlug(decodeURIComponent(m[1])), chapter: null };
   }
+  if (/(^|\.)westmanga\.[a-z]+$/.test(host)) {
+    const m = path.match(/^\/(?:comic|manga)\/([^/]+)/), v = path.match(/^\/view\/([^/]+)/);
+    if (!m && !v) throw webErr("Link WestManga harus berupa halaman judul (/comic/…) atau chapter (/view/…)", 400);
+    if (m) { const d = await westDetail(decodeURIComponent(m[1])); return { source: "westmanga", manga: { id: d.manga.id, title: d.manga.title, cover: d.manga.cover }, chapter: null }; }
+    throw webErr("Untuk WestManga, tempel link halaman judul (/comic/…) lalu pilih chapter-nya.", 400);
+  }
   // situs lain: kenali tema WordPress-nya
   let page = await webFetch(u.href);
   const theme = detectTheme(page.text);
@@ -1229,6 +1326,7 @@ async function webChapters(source: string, id: string) {
   if (source === "shinigami") return await shngChapters(id);
   if (source === "komiku") return (await komikuDetail(id)).chapters;
   if (source === "kiryuu") return await kiryuuChapters(id);
+  if (source === "westmanga") return (await westDetail(id)).chapters;
   const page = await webFetch(id);
   const lang = pageLang(page.text);
   const list = source === "madara" ? await madaraChapters(page.text, page.url, lang) : themesiaChapters(page.text, page.url, lang);
@@ -1236,7 +1334,7 @@ async function webChapters(source: string, id: string) {
   return list;
 }
 async function webPages(source: string, id: string) {
-  const r = source === "omegascans" ? await osPages(id) : source === "shinigami" ? await shngPages(id) : source === "komiku" ? await komikuPages(id) : source === "kiryuu" ? await kiryuuPages(id) : await themePages(id);
+  const r = source === "omegascans" ? await osPages(id) : source === "shinigami" ? await shngPages(id) : source === "komiku" ? await komikuPages(id) : source === "kiryuu" ? await kiryuuPages(id) : source === "westmanga" ? await westPages(id) : await themePages(id);
   if (!r.images.length) throw webErr("Tidak menemukan gambar di chapter ini. Mungkin chapter terkunci atau situsnya memakai cara lain memuat gambar.", 422);
   return { ref: r.ref, images: await Promise.all(r.images.map(async (u) => ({ u, p: await signImg(u, r.ref) }))) };
 }
@@ -1361,12 +1459,27 @@ Deno.serve(async (req) => {
       try { mapping = await saveMapping({ ...row, mangadex_id: m.id }, await mapMu({ ...row, mangadex_id: m.id })); } catch (e: any) { console.error("map on follow", e?.message); }
       return json({ ok: true, follow: { ...row, mangadex_id: m.id, ...(mapping || {}) } });
     }
-    // bookmark manga dari Shinigami / Komiku / Kiryuu (v1.8.0)
+    // laporan chapter dari aplikasi untuk sumber yang memblokir server (v1.9.0): diproses seperti cron untuk satu manga
+    if (action === "web_report") {
+      const mid = String(body.manga_id || "").slice(0, 700);
+      const { data: f } = await admin.from("rexxa_manga_follows").select("source").eq("user_id", user.id).eq("manga_id", mid).maybeSingle();
+      if (!f || !WEB_FOLLOW.includes(f.source)) return json({ error: "Bookmark tidak ditemukan" }, 404);
+      const list = cleanChapters(body.chapters);
+      if (!list.length) return json({ ok: true, found: 0 });
+      return json({ ok: true, ...(await check(user.id, { onlyManga: mid, lists: new Map([[mid, list]]) })) });
+    }
+    // bookmark manga dari Shinigami / Komiku / Kiryuu / WestManga
     if (action === "follow_web") {
       const src = String(body.source || ""), id = String(body.manga_id || "").slice(0, 600);
       if (!WEB_FOLLOW.includes(src)) return json({ error: "sumber tidak dikenal" }, 400);
       let d: any;
-      try { d = await sourceDetail(src, id); } catch (e: any) { return json({ error: e?.message || String(e) }, e?.status || 502); }
+      try { d = await sourceDetail(src, id); }
+      catch (e: any) {
+        // server diblokir (mis. Cloudflare) tapi aplikasi sudah membaca datanya sendiri: pakai salinan dari aplikasi
+        const snap = cleanSnapshot(body.snapshot, id);
+        if (!snap) return json({ error: e?.message || String(e) }, e?.status || 502);
+        d = snap;
+      }
       const mid = String(d.manga?.id || id);
       const meta = { title: String(d.manga?.title || body.title || "Manga").slice(0, 200), cover: String(d.manga?.cover || body.cover || "").slice(0, 1000) };
       const top = newestChapter(d.chapters || []);

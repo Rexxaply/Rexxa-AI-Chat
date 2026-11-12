@@ -6,12 +6,13 @@
 // - Unduh dari link: MangaDex, Omega Scans, Shinigami, Komiku, Kiryuu, WestManga, dan situs bertema MangaThemesia / Madara
 // - Jelajah & baca di aplikasi: Shinigami, Komiku, Kiryuu, WestManga (v1.9.0)
 // - Notifikasi APK Android lewat Firebase Cloud Messaging; secret FCM_SERVICE_ACCOUNT (v1.10.0)
+// - Mode bersama: pengguna lain di Supabase yang sama langsung siap pakai; kunci jadwal hanya untuk pemilik (v1.11.0)
 // Deploy: Supabase Dashboard → Edge Functions → Deploy a new function → Via Editor
 //         nama: rexxa-manga → tempel kode ini → Deploy → matikan "Verify JWT".
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.10.2";
+const VERSION = "1.11.0";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -327,6 +328,28 @@ async function latestChapter(mangaId: string, langs: string[]) {
     "contentRating[]": ["safe", "suggestive", "erotica", "pornographic"], includeFutureUpdates: "0",
   });
   return j.data?.[0] ? mapChapter(j.data[0]) : null;
+}
+
+/* ---------- pemilik server (mode bersama: beberapa orang memakai Supabase yang sama) ---------- */
+// Pemilik = email di secret REXXA_OWNER_EMAIL, atau akun pertama yang terdaftar di Supabase ini.
+let ownerCache: { id: string | null; at: number } | null = null;
+async function ownerId(): Promise<string | null> {
+  if (ownerCache && Date.now() - ownerCache.at < 10 * 60e3) return ownerCache.id;
+  const want = (Deno.env.get("REXXA_OWNER_EMAIL") || "").trim().toLowerCase();
+  let best: any = null;
+  try {
+    for (let page = 1; page <= 20; page++) {
+      const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error || !data) break;
+      for (const u of data.users || []) {
+        if (want) { if (String(u.email || "").toLowerCase() === want) best = u; }
+        else if (!best || String(u.created_at) < String(best.created_at)) best = u;
+      }
+      if ((data.users || []).length < 1000 || (want && best)) break;
+    }
+  } catch (e: any) { console.error("ownerId", e?.message); }
+  ownerCache = { id: best?.id ?? null, at: Date.now() };
+  return ownerCache.id;
 }
 
 /* ---------- Firebase Cloud Messaging (APK Android) ---------- */
@@ -1480,7 +1503,10 @@ Deno.serve(async (req) => {
 
     if (action === "setup") {
       const s = await secrets();
-      return json({ ok: true, version: VERSION, vapidPublicKey: s.vapidPublic, cronSecret: s.cronSecret, functionUrl: `${SUPABASE_URL}/functions/v1/rexxa-manga` });
+      // kunci jadwal hanya untuk pemilik: pengguna lain di Supabase yang sama cukup memakai server yang sudah siap
+      const owner = await ownerId();
+      const isOwner = !owner || owner === user.id;
+      return json({ ok: true, version: VERSION, owner: isOwner, vapidPublicKey: s.vapidPublic, ...(isOwner ? { cronSecret: s.cronSecret } : {}), functionUrl: `${SUPABASE_URL}/functions/v1/rexxa-manga` });
     }
     if (action === "diag") {
       const out: Record<string, unknown> = { version: VERSION, serviceKey: !!SERVICE_KEY };

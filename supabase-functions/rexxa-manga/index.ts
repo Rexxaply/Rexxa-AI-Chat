@@ -11,7 +11,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.10.1";
+const VERSION = "1.10.2";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -1645,6 +1645,8 @@ Deno.serve(async (req) => {
     }
     if (action === "check") return json({ ok: true, ...(await check(user.id)) });
     if (action === "test_push") {
+      const delay = Math.min(10, Math.max(0, Number(body.delay) || 0));
+      if (delay) await sleep(delay * 1000); // beri waktu pengguna mengunci layar / pindah aplikasi
       const rep: PushReport = { web: 0, fcm: 0, webDevices: 0, fcmDevices: 0, errors: [] };
       const n = await pushTo(user.id, { title: "🔔 Tes notifikasi REXXA", body: "Notifikasi chapter baru (Indonesia/Inggris) akan muncul seperti ini.", url: "./#manga", tag: "rexxa-test" }, rep);
       return json({ ok: true, sent: n, ...rep });

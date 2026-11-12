@@ -1,6 +1,6 @@
 // REXXA AI service worker – bisa dibuka offline, permintaan ke API AI tidak pernah di-cache.
-const VERSION = 'rexxa-v11';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const VERSION = 'rexxa-v13-badge';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/badge-96.png'];
 const CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', e => {
@@ -28,5 +28,26 @@ self.addEventListener('fetch', e => {
       return res;
     }).catch(() => hit);
     return hit || net;
+  }));
+});
+
+// ---- Notifikasi push (chapter manga baru, dll.) ----
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { title: 'REXXA AI', body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'REXXA AI', {
+    body: d.body || '', icon: d.icon || './icons/icon-192.png', badge: './icons/badge-96.png',
+    tag: d.tag || undefined, renotify: !!d.tag, vibrate: [200, 100, 200],
+    data: { url: d.url || './#manga' },
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './#manga', self.location.href).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    if (url.startsWith(self.location.origin)) {
+      for (const c of list) if (c.url.startsWith(self.location.origin) && 'focus' in c) { c.navigate && c.navigate(url); return c.focus(); }
+    }
+    return self.clients.openWindow(url);
   }));
 });

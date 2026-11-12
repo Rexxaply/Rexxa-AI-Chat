@@ -1,0 +1,21 @@
+# Claude / tooling lokal
+.claude/
+skills-lock.json
+CLAUDE.md
+
+# Python & cache
+__pycache__/
+*.pyc
+
+# Rahasia & environment
+.env
+.env.*
+*.pem
+*.key
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

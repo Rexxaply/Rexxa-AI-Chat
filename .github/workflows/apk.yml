@@ -28,6 +28,17 @@ jobs:
           cp -r ../icons www/
       - name: Pasang Capacitor
         run: npm install --no-audit --no-fund
+      - name: Sisipkan JavaScript Capacitor ke halaman (penghubung ke plugin native)
+        run: |
+          set -e
+          cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          cp node_modules/@capacitor/push-notifications/dist/plugin.js www/cap-push.js
+          cp node_modules/@capacitor/filesystem/dist/plugin.js www/cap-fs.js
+          head -c 300 www/cap-push.js; echo
+          grep -q "registerPlugin" www/cap-push.js
+          grep -q "capacitorExports" www/capacitor.js
+          sed -i '0,/<head>/s##<head>\n    <script src="capacitor.js"></script>\n    <script src="cap-push.js"></script>\n    <script src="cap-fs.js"></script>#' www/index.html
+          head -8 www/index.html
       - name: Buat proyek Android
         run: |
           npx cap add android

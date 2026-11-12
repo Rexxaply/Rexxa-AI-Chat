@@ -11,7 +11,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.10.0";
+const VERSION = "1.10.1";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -378,23 +378,27 @@ async function fcmSend(token: string, p: Record<string, unknown>) {
 }
 
 /* ---------- Web Push ---------- */
-async function pushTo(userId: string, payload: Record<string, unknown>) {
+type PushReport = { web: number; fcm: number; webDevices: number; fcmDevices: number; errors: string[] };
+async function pushTo(userId: string, payload: Record<string, unknown>, rep?: PushReport) {
   const s = await secrets();
   webpush.setVapidDetails("mailto:rexxa@example.com", s.vapidPublic, s.vapidPrivate);
   const { data: subs } = await admin.from("rexxa_push_subs").select("*").eq("user_id", userId);
   let sent = 0;
   for (const sub of subs || []) {
     if (String(sub.endpoint).startsWith("fcm:")) {
-      try { await fcmSend(String(sub.endpoint).slice(4), payload); sent++; }
+      if (rep) rep.fcmDevices++;
+      try { await fcmSend(String(sub.endpoint).slice(4), payload); sent++; if (rep) rep.fcm++; }
       catch (e: any) {
         if (e?.gone) await admin.from("rexxa_push_subs").delete().eq("user_id", userId).eq("endpoint", sub.endpoint);
         else console.error("fcm", e?.message);
+        if (rep && !rep.errors.includes("APK: " + e?.message)) rep.errors.push("APK: " + (e?.gone ? "token HP sudah tidak berlaku, aktifkan ulang notifikasi di APK" : e?.message));
       }
       continue;
     }
+    if (rep) rep.webDevices++;
     try {
       await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify(payload), { TTL: 6 * 3600, urgency: "normal" });
-      sent++;
+      sent++; if (rep) rep.web++;
     } catch (e: any) {
       if (e?.statusCode === 404 || e?.statusCode === 410) await admin.from("rexxa_push_subs").delete().eq("user_id", userId).eq("endpoint", sub.endpoint);
       else console.error("push", e?.statusCode, e?.body || e?.message);
@@ -1641,8 +1645,9 @@ Deno.serve(async (req) => {
     }
     if (action === "check") return json({ ok: true, ...(await check(user.id)) });
     if (action === "test_push") {
-      const n = await pushTo(user.id, { title: "🔔 Tes notifikasi REXXA", body: "Notifikasi chapter baru (Indonesia/Inggris) akan muncul seperti ini.", url: "./#manga", tag: "rexxa-test" });
-      return json({ ok: true, sent: n });
+      const rep: PushReport = { web: 0, fcm: 0, webDevices: 0, fcmDevices: 0, errors: [] };
+      const n = await pushTo(user.id, { title: "🔔 Tes notifikasi REXXA", body: "Notifikasi chapter baru (Indonesia/Inggris) akan muncul seperti ini.", url: "./#manga", tag: "rexxa-test" }, rep);
+      return json({ ok: true, sent: n, ...rep });
     }
     return json({ error: "action tidak dikenal" }, 400);
   } catch (e: any) {

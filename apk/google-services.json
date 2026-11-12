@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "481295317422",
+    "project_id": "rexxa-ai",
+    "storage_bucket": "rexxa-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:481295317422:android:b2b482428b47d89b14703f",
+        "android_client_info": {
+          "package_name": "com.rexxa.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDJOdZrUT4Dto4kknM1qAAo1leNgXTptE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,12 +5,13 @@
 // - Unduh chapter: daftar chapter, alamat server MangaDex@Home, dan proxy gambar cadangan
 // - Unduh dari link: MangaDex, Omega Scans, Shinigami, Komiku, Kiryuu, WestManga, dan situs bertema MangaThemesia / Madara
 // - Jelajah & baca di aplikasi: Shinigami, Komiku, Kiryuu, WestManga (v1.9.0)
+// - Notifikasi APK Android lewat Firebase Cloud Messaging; secret FCM_SERVICE_ACCOUNT (v1.10.0)
 // Deploy: Supabase Dashboard → Edge Functions → Deploy a new function → Via Editor
 //         nama: rexxa-manga → tempel kode ini → Deploy → matikan "Verify JWT".
 import { createClient } from "npm:@supabase/supabase-js@2.76.1";
 import webpush from "npm:web-push@3.6.7";
 
-const VERSION = "1.9.0";
+const VERSION = "1.10.0";
 const WEEK = 7 * 864e5; // riwayat update disimpan 7 hari
 const LANGS = ["id", "en"]; // bahasa yang didukung: Indonesia & Inggris
 const LANG_NAME: Record<string, string> = { id: "Bahasa Indonesia", en: "Bahasa Inggris" };
@@ -328,6 +329,54 @@ async function latestChapter(mangaId: string, langs: string[]) {
   return j.data?.[0] ? mapChapter(j.data[0]) : null;
 }
 
+/* ---------- Firebase Cloud Messaging (APK Android) ---------- */
+// perangkat APK disimpan di rexxa_push_subs dengan endpoint "fcm:<token>"
+let fcmAuth: { token: string; exp: number; project: string } | null = null;
+const b64url = (b: Uint8Array | string) => {
+  const bytes = typeof b === "string" ? new TextEncoder().encode(b) : b;
+  let bin = ""; for (const x of bytes) bin += String.fromCharCode(x);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+async function fcmToken() {
+  if (fcmAuth && Date.now() < fcmAuth.exp - 60e3) return fcmAuth;
+  const raw = Deno.env.get("FCM_SERVICE_ACCOUNT");
+  if (!raw) throw new Error("Secret FCM_SERVICE_ACCOUNT belum diisi di Edge Functions → Secrets.");
+  let sa: any; try { sa = JSON.parse(raw); } catch { throw new Error("FCM_SERVICE_ACCOUNT bukan JSON yang valid. Tempel seluruh isi file kunci akun layanan."); }
+  const pem = String(sa.private_key || "").replace(/\\n/g, "\n").replace(/-----[^-]+-----/g, "").replace(/\s+/g, "");
+  const der = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const now = Math.floor(Date.now() / 1000);
+  const unsigned = b64url(JSON.stringify({ alg: "RS256", typ: "JWT" })) + "." + b64url(JSON.stringify({
+    iss: sa.client_email, scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token", iat: now, exp: now + 3600,
+  }));
+  const sig = new Uint8Array(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(unsigned)));
+  const r = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: unsigned + "." + b64url(sig) }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) throw new Error(`Login FCM gagal: ${j.error_description || j.error || r.status}`);
+  fcmAuth = { token: j.access_token, exp: Date.now() + (Number(j.expires_in) || 3600) * 1000, project: String(sa.project_id) };
+  return fcmAuth;
+}
+async function fcmSend(token: string, p: Record<string, unknown>) {
+  const a = await fcmToken();
+  const str = (v: unknown) => (v == null ? "" : String(v));
+  const message = {
+    token,
+    notification: { title: str(p.title), body: str(p.body), ...(p.icon ? { image: str(p.icon) } : {}) },
+    data: { url: str(p.url || "./#manga"), tag: str(p.tag) },
+    android: { priority: "HIGH", ttl: "21600s", notification: { channel_id: "manga", tag: str(p.tag) || undefined, sound: "default", default_vibrate_timings: true, notification_priority: "PRIORITY_HIGH" } },
+  };
+  const r = await fetch(`https://fcm.googleapis.com/v1/projects/${a.project}/messages:send`, {
+    method: "POST", headers: { Authorization: "Bearer " + a.token, "Content-Type": "application/json" }, body: JSON.stringify({ message }),
+  });
+  if (r.ok) return;
+  const t = await r.text();
+  throw Object.assign(new Error(`FCM ${r.status}: ${t.slice(0, 200)}`), { gone: r.status === 404 || /UNREGISTERED|registration-token-not-registered/i.test(t) });
+}
+
 /* ---------- Web Push ---------- */
 async function pushTo(userId: string, payload: Record<string, unknown>) {
   const s = await secrets();
@@ -335,6 +384,14 @@ async function pushTo(userId: string, payload: Record<string, unknown>) {
   const { data: subs } = await admin.from("rexxa_push_subs").select("*").eq("user_id", userId);
   let sent = 0;
   for (const sub of subs || []) {
+    if (String(sub.endpoint).startsWith("fcm:")) {
+      try { await fcmSend(String(sub.endpoint).slice(4), payload); sent++; }
+      catch (e: any) {
+        if (e?.gone) await admin.from("rexxa_push_subs").delete().eq("user_id", userId).eq("endpoint", sub.endpoint);
+        else console.error("fcm", e?.message);
+      }
+      continue;
+    }
     try {
       await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify(payload), { TTL: 6 * 3600, urgency: "normal" });
       sent++;

@@ -63,7 +63,23 @@ jobs:
           sed -i 's#</application>#    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_rexxa" />\n        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="manga" />\n    </application>#' $M
           grep -n "firebase\|POST_NOTIFICATIONS" $M || true
       - name: Kunci tanda tangan tetap (agar update bisa dipasang menimpa versi lama)
-        run: mkdir -p ~/.android && cp rexxa-debug.keystore ~/.android/debug.keystore
+        run: |
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  rexxa {
+                      storeFile file('../../rexxa-debug.keystore')
+                      storePassword 'android'
+                      keyAlias 'androiddebugkey'
+                      keyPassword 'android'
+                  }
+              }
+              buildTypes {
+                  debug { signingConfig signingConfigs.rexxa }
+              }
+          }
+          GRADLE
       - name: Build APK
         working-directory: apk/android
         run: |
@@ -71,6 +87,9 @@ jobs:
           sed -i -E "s/versionCode [0-9]+/versionCode ${{ github.run_number }}/" app/build.gradle
           ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk ../rexxa-ai.apk
+          # pastikan APK memakai kunci tetap (SHA-256 sertifikat harus sama di setiap build)
+          keytool -printcert -jarfile ../rexxa-ai.apk | grep -i "SHA256:"
+          keytool -printcert -jarfile ../rexxa-ai.apk | grep -qi "BB:6C:E0:3D:7A:72:20:77"
       - uses: actions/upload-artifact@v4
         with: { name: rexxa-ai-apk, path: apk/rexxa-ai.apk }
       - name: Terbitkan ke Release "apk-terbaru"
